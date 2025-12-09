@@ -34,7 +34,15 @@ export class DifyAPI {
     }
 
     if (responseMode === 'streaming') {
-      const response = await fetch(`${this.apiEndpoint}/chat-messages`, {
+      // エンドポイントの末尾にスラッシュがないことを確認
+      const endpoint = this.apiEndpoint.endsWith('/') 
+        ? this.apiEndpoint.slice(0, -1) 
+        : this.apiEndpoint
+      const url = endpoint.endsWith('/chat-messages') 
+        ? endpoint 
+        : `${endpoint}/chat-messages`
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
@@ -44,7 +52,19 @@ export class DifyAPI {
       })
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`)
+        // エラーレスポンスの詳細を取得
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`
+        try {
+          const errorData = await response.json()
+          if (errorData.message) {
+            errorMessage = `API Error: ${response.status} - ${errorData.message}`
+          } else if (errorData.error) {
+            errorMessage = `API Error: ${response.status} - ${errorData.error}`
+          }
+        } catch (e) {
+          // JSONパースに失敗した場合はデフォルトメッセージを使用
+        }
+        throw new Error(errorMessage)
       }
 
       if (!response.body) {

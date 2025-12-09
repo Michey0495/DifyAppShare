@@ -26,7 +26,7 @@ export default function Home() {
               <h1 className="text-2xl font-bold text-gray-900">
                 DifyAppShare
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-700 mt-1">
                 Difyワークフローチャットテスト環境
               </p>
             </div>
@@ -51,7 +51,7 @@ export default function Home() {
           <div className="lg:col-span-3">
             <div className="mb-4">
               <h2 className="text-lg font-semibold mb-2">チャットスペース</h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-700">
                 各スペースにDifyアプリケーションを割り当ててチャットテストができます
               </p>
             </div>

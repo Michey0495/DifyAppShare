@@ -138,7 +138,7 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
             onSelect={handleAppSelect}
           />
           {app && (
-            <span className="text-xs text-gray-500 truncate">
+            <span className="text-xs text-gray-700 truncate font-medium">
               {app.description}
             </span>
           )}
@@ -154,7 +154,7 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {session.messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+          <div className="flex items-center justify-center h-full text-gray-600 text-sm">
             {app
               ? 'メッセージを入力してチャットを開始してください'
               : 'アプリケーションを選択してください'}
@@ -163,13 +163,13 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
           <MessageList messages={session.messages} />
         )}
         {isLoading && (
-          <div className="flex items-center gap-2 text-gray-500 text-sm">
+          <div className="flex items-center gap-2 text-gray-700 text-sm font-medium">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span>応答を生成中...</span>
           </div>
         )}
         {error && (
-          <div className="p-2 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
+          <div className="p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm font-medium shadow-sm">
             {error}
           </div>
         )}
