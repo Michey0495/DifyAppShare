@@ -42,14 +42,23 @@ export class DifyAPI {
         ? endpoint 
         : `${endpoint}/chat-messages`
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      })
+      let response: Response
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        })
+      } catch (fetchError) {
+        // ネットワークエラー（CORS、接続エラーなど）
+        if (fetchError instanceof TypeError && fetchError.message.includes('fetch')) {
+          throw new Error('ネットワークエラー: APIエンドポイントに接続できません。CORS設定またはエンドポイントURLを確認してください。')
+        }
+        throw new Error(`接続エラー: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`)
+      }
 
       if (!response.ok) {
         // エラーレスポンスの詳細を取得
@@ -60,9 +69,15 @@ export class DifyAPI {
             errorMessage = `API Error: ${response.status} - ${errorData.message}`
           } else if (errorData.error) {
             errorMessage = `API Error: ${response.status} - ${errorData.error}`
+          } else if (errorData.code) {
+            errorMessage = `API Error: ${response.status} - ${errorData.code}: ${errorData.message || errorData.error || ''}`
           }
         } catch (e) {
           // JSONパースに失敗した場合はデフォルトメッセージを使用
+          const text = await response.text().catch(() => '')
+          if (text) {
+            errorMessage = `API Error: ${response.status} - ${text.substring(0, 200)}`
+          }
         }
         throw new Error(errorMessage)
       }

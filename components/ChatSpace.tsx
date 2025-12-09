@@ -26,9 +26,13 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const shouldAutoScroll = useRef(true)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // 自動スクロールは、ユーザーが手動でスクロールしていない場合のみ実行
+    if (shouldAutoScroll.current && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [session?.messages])
 
   if (!session) return null
@@ -40,6 +44,9 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
       setError('アプリケーションが選択されていません')
       return
     }
+
+    // メッセージ送信時は自動スクロールを無効化
+    shouldAutoScroll.current = false
 
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}-user`,
@@ -152,7 +159,15 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div 
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+        onScroll={(e) => {
+          // ユーザーが手動でスクロールした場合、自動スクロールを無効化
+          const target = e.currentTarget
+          const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 100
+          shouldAutoScroll.current = isAtBottom
+        }}
+      >
         {session.messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-700 text-sm font-medium">
             {app
