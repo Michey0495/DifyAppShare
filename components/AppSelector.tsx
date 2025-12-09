@@ -25,21 +25,21 @@ export function AppSelector({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium min-w-[200px]"
+        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium min-w-[200px] text-gray-900"
       >
         <span className="flex-1 text-left truncate">
           {currentApp ? currentApp.name : 'アプリを選択'}
         </span>
-        <ChevronDown className="w-4 h-4 flex-shrink-0" />
+        <ChevronDown className="w-4 h-4 flex-shrink-0 text-gray-700" />
       </button>
 
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-30"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-xl z-40 max-h-60 overflow-y-auto relative">
             {apps.length === 0 ? (
               <div className="px-3 py-2 text-sm text-gray-700">
                 アプリケーションが登録されていません

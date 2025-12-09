@@ -79,8 +79,8 @@ export function AppManager() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto relative z-[101]">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900">
                 {isEditing ? 'アプリを編集' : 'アプリを追加'}
@@ -90,7 +90,7 @@ export function AppManager() {
                   setIsOpen(false)
                   setIsEditing(null)
                 }}
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-700 hover:text-gray-900"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -143,7 +143,7 @@ export function AppManager() {
                 <p className="text-xs text-gray-700 mt-1">
                   ワークフローアプリ: https://api.dify.ai/v1/workflows/run<br />
                   チャットアプリ: https://api.dify.ai/v1<br />
-                  <span className="text-gray-600">※エンドポイントURLから自動判定されます</span>
+                  <span className="text-gray-700">※エンドポイントURLから自動判定されます</span>
                 </p>
               </div>
 
