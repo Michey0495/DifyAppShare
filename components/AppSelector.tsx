@@ -24,14 +24,14 @@ export function AppSelector({
     ? apps.find((app) => app.id === currentAppId)
     : null
 
-  // モーダルが開いている時、ドロップダウンを閉じる
+  // モーダルが開いている時、ドロップダウンを強制的に閉じる
   useEffect(() => {
     if (isModalOpen) {
       setIsOpen(false)
     }
   }, [isModalOpen])
 
-  // ドロップダウンの位置を計算
+  // ドロップダウンの位置を計算（モーダルが閉じている時のみ）
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 200 })
   
   useEffect(() => {
@@ -44,6 +44,9 @@ export function AppSelector({
       })
     }
   }, [isOpen, isModalOpen])
+
+  // モーダルが開いている時は、ドロップダウンを絶対に表示しない
+  const shouldShowDropdown = !isModalOpen && isOpen
 
   return (
     <div className="relative">
@@ -63,7 +66,8 @@ export function AppSelector({
         <ChevronDown className="w-4 h-4 flex-shrink-0 text-gray-700" />
       </button>
 
-      {isOpen && !isModalOpen && (
+      {/* モーダルが開いている時は絶対にドロップダウンを表示しない */}
+      {shouldShowDropdown && (
         <>
           <div
             className="fixed inset-0 z-[1]"
