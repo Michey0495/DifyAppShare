@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// CORS preflight リクエストの処理
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -8,7 +20,12 @@ export async function POST(request: NextRequest) {
     if (!apiEndpoint || !apiKey) {
       return NextResponse.json(
         { error: 'Missing required parameters: apiEndpoint or apiKey' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
+        }
       )
     }
 
@@ -32,14 +49,11 @@ export async function POST(request: NextRequest) {
         : `${endpoint}/workflows/run`
 
       // ワークフローアプリはqueryではなくinputsに含める
+      // 入力変数名は 'question' に固定（段落形式の256文字）
       const workflowInputs = inputs || {}
-      // queryが提供されている場合、ワークフローの最初の入力変数に設定
-      // 一般的には'question'や'input'などの変数名が使われる
-      if (query && Object.keys(workflowInputs).length === 0) {
-        // 変数名を推測（一般的な名前を試す）
-        const commonVarNames = ['question', 'input', 'text', 'query', 'message', 'prompt']
-        // とりあえず最初の一般的な名前を使用
-        workflowInputs[commonVarNames[0]] = query
+      if (query) {
+        // queryが提供されている場合、'question'という変数名で設定
+        workflowInputs['question'] = query
       }
 
       requestData = {
@@ -52,7 +66,12 @@ export async function POST(request: NextRequest) {
       if (!query) {
         return NextResponse.json(
           { error: 'Missing required parameter: query (for chat apps)' },
-          { status: 400 }
+          { 
+            status: 400,
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+            },
+          }
         )
       }
 
@@ -96,7 +115,12 @@ export async function POST(request: NextRequest) {
       }
       return NextResponse.json(
         { error: errorMessage },
-        { status: response.status }
+        { 
+          status: response.status,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
+        }
       )
     }
 
@@ -107,11 +131,16 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
           'Connection': 'keep-alive',
+          'Access-Control-Allow-Origin': '*',
         },
       })
     } else {
       const data = await response.json()
-      return NextResponse.json(data)
+      return NextResponse.json(data, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      })
     }
   } catch (error) {
     console.error('Dify API proxy error:', error)
@@ -122,7 +151,12 @@ export async function POST(request: NextRequest) {
           : 'Unknown error occurred',
         details: error instanceof Error ? error.stack : undefined
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      }
     )
   }
 }
