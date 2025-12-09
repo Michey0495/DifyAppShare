@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { apiEndpoint, apiKey, query, conversationId, inputs, responseMode } = body
+    const { apiEndpoint, apiKey, query, conversationId, inputs, responseMode, appType } = body
 
-    if (!apiEndpoint || !apiKey || !query) {
+    if (!apiEndpoint || !apiKey) {
       return NextResponse.json(
-        { error: 'Missing required parameters: apiEndpoint, apiKey, or query' },
+        { error: 'Missing required parameters: apiEndpoint or apiKey' },
         { status: 400 }
       )
     }
@@ -16,16 +16,57 @@ export async function POST(request: NextRequest) {
     const endpoint = apiEndpoint.endsWith('/') 
       ? apiEndpoint.slice(0, -1) 
       : apiEndpoint
-    const url = endpoint.endsWith('/chat-messages') 
-      ? endpoint 
-      : `${endpoint}/chat-messages`
 
-    const requestData = {
-      inputs: inputs || {},
-      query,
-      response_mode: responseMode || 'streaming',
-      conversation_id: conversationId,
-      user: 'dify-app-share-user',
+    // アプリタイプの判定（エンドポイントURLから自動判定）
+    const isWorkflow = appType === 'workflow' || 
+                       endpoint.includes('/workflows/run') ||
+                       endpoint.endsWith('/workflows/run')
+
+    let url: string
+    let requestData: any
+
+    if (isWorkflow) {
+      // ワークフローアプリの場合
+      url = endpoint.endsWith('/workflows/run')
+        ? endpoint
+        : `${endpoint}/workflows/run`
+
+      // ワークフローアプリはqueryではなくinputsに含める
+      const workflowInputs = inputs || {}
+      // queryが提供されている場合、ワークフローの最初の入力変数に設定
+      // 一般的には'question'や'input'などの変数名が使われる
+      if (query && Object.keys(workflowInputs).length === 0) {
+        // 変数名を推測（一般的な名前を試す）
+        const commonVarNames = ['question', 'input', 'text', 'query', 'message', 'prompt']
+        // とりあえず最初の一般的な名前を使用
+        workflowInputs[commonVarNames[0]] = query
+      }
+
+      requestData = {
+        inputs: workflowInputs,
+        response_mode: responseMode || 'streaming',
+        user: 'dify-app-share-user',
+      }
+    } else {
+      // チャットアプリの場合
+      if (!query) {
+        return NextResponse.json(
+          { error: 'Missing required parameter: query (for chat apps)' },
+          { status: 400 }
+        )
+      }
+
+      url = endpoint.endsWith('/chat-messages') 
+        ? endpoint 
+        : `${endpoint}/chat-messages`
+
+      requestData = {
+        inputs: inputs || {},
+        query,
+        response_mode: responseMode || 'streaming',
+        conversation_id: conversationId,
+        user: 'dify-app-share-user',
+      }
     }
 
     // サーバー側からDify APIにリクエストを送信（CORS問題を回避）

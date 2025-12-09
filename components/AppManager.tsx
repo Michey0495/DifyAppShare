@@ -141,8 +141,9 @@ export function AppManager() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
                 />
                 <p className="text-xs text-gray-700 mt-1">
-                  ワークフローアプリの場合: https://api.dify.ai/v1/workflows/run<br />
-                  チャットアプリの場合: https://api.dify.ai/v1
+                  ワークフローアプリ: https://api.dify.ai/v1/workflows/run<br />
+                  チャットアプリ: https://api.dify.ai/v1<br />
+                  <span className="text-gray-600">※エンドポイントURLから自動判定されます</span>
                 </p>
               </div>
 

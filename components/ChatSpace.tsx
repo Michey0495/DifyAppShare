@@ -76,11 +76,13 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
 
         const parser = difyAPI.parseStreamResponse(stream)
         let fullContent = ''
+        const isWorkflow = difyAPI.getAppType() === 'workflow'
 
         for await (const chunk of parser) {
-          if (chunk.event === 'message' || chunk.event === 'message_end') {
-            if (chunk.answer) {
-              fullContent += chunk.answer
+          if (isWorkflow) {
+            // ワークフローアプリの場合: text_chunkイベントからテキストを取得
+            if (chunk.event === 'text_chunk' && chunk.data?.text) {
+              fullContent += chunk.data.text
               const updatedMessage: ChatMessage = {
                 ...assistantMessage,
                 content: fullContent,
@@ -92,6 +94,52 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
                 useSessionStore.getState().updateSession(sessionId, {
                   messages: updatedMessages,
                 })
+              }
+            } else if (chunk.event === 'workflow_finished' && chunk.data?.outputs) {
+              // ワークフロー完了時、outputsから最終結果を取得
+              const outputs = chunk.data.outputs
+              // outputsからテキストを抽出（一般的なキー名を試す）
+              const textKeys = ['text', 'output', 'result', 'answer', 'response']
+              for (const key of textKeys) {
+                if (outputs[key] && typeof outputs[key] === 'string') {
+                  fullContent = outputs[key]
+                  break
+                }
+              }
+              // オブジェクトの場合はJSON文字列化
+              if (!fullContent && Object.keys(outputs).length > 0) {
+                fullContent = JSON.stringify(outputs, null, 2)
+              }
+              const updatedMessage: ChatMessage = {
+                ...assistantMessage,
+                content: fullContent || 'ワークフローが完了しました',
+              }
+              const currentSession = useSessionStore.getState().getSession(sessionId)
+              if (currentSession) {
+                const updatedMessages = [...currentSession.messages]
+                updatedMessages[messageIndex] = updatedMessage
+                useSessionStore.getState().updateSession(sessionId, {
+                  messages: updatedMessages,
+                })
+              }
+            }
+          } else {
+            // チャットアプリの場合: messageイベントからanswerを取得
+            if (chunk.event === 'message' || chunk.event === 'message_end') {
+              if (chunk.answer) {
+                fullContent += chunk.answer
+                const updatedMessage: ChatMessage = {
+                  ...assistantMessage,
+                  content: fullContent,
+                }
+                const currentSession = useSessionStore.getState().getSession(sessionId)
+                if (currentSession) {
+                  const updatedMessages = [...currentSession.messages]
+                  updatedMessages[messageIndex] = updatedMessage
+                  useSessionStore.getState().updateSession(sessionId, {
+                    messages: updatedMessages,
+                  })
+                }
               }
             }
           }

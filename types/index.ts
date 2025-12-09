@@ -7,6 +7,7 @@ export interface DifyApp {
   createdBy: string
   createdAt: string
   updatedAt: string
+  appType?: 'chat' | 'workflow' // アプリタイプ（自動判定も可能）
 }
 
 export interface ChatMessage {
@@ -43,10 +44,30 @@ export interface DifyChatRequest {
 export interface DifyChatResponse {
   event: string
   task_id: string
-  id: string
-  message_id: string
-  conversation_id: string
-  answer: string
-  created_at: number
+  id?: string
+  message_id?: string
+  conversation_id?: string
+  answer?: string
+  created_at?: number
+  workflow_run_id?: string
+  data?: {
+    text?: string
+    outputs?: Record<string, any>
+    status?: string
+    [key: string]: any
+  }
+}
+
+export interface DifyWorkflowRequest {
+  inputs: Record<string, any>
+  response_mode: 'blocking' | 'streaming'
+  user: string
+  files?: Array<{
+    type: string
+    transfer_method: string
+    url?: string
+    upload_file_id?: string
+  }>
+  trace_id?: string
 }
 

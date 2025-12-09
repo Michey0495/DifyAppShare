@@ -4,11 +4,25 @@ import { DifyChatRequest, DifyChatResponse } from '@/types'
 export class DifyAPI {
   private apiEndpoint: string
   private apiKey: string
+  private appType: 'chat' | 'workflow'
   private axiosInstance: AxiosInstance
 
-  constructor(apiEndpoint: string, apiKey: string) {
+  constructor(apiEndpoint: string, apiKey: string, appType?: 'chat' | 'workflow') {
     this.apiEndpoint = apiEndpoint
     this.apiKey = apiKey
+    
+    // アプリタイプの自動判定
+    if (appType) {
+      this.appType = appType
+    } else {
+      const endpoint = apiEndpoint.endsWith('/') 
+        ? apiEndpoint.slice(0, -1) 
+        : apiEndpoint
+      this.appType = endpoint.includes('/workflows/run') || endpoint.endsWith('/workflows/run')
+        ? 'workflow'
+        : 'chat'
+    }
+
     this.axiosInstance = axios.create({
       baseURL: apiEndpoint,
       headers: {
@@ -25,14 +39,6 @@ export class DifyAPI {
     inputs?: Record<string, any>,
     responseMode: 'blocking' | 'streaming' = 'streaming'
   ): Promise<ReadableStream<Uint8Array> | DifyChatResponse> {
-    const requestData: DifyChatRequest = {
-      inputs: inputs || {},
-      query,
-      response_mode: responseMode,
-      conversation_id: conversationId,
-      user: 'dify-app-share-user',
-    }
-
     // Next.jsのAPIルート経由でプロキシを使用（CORS問題を回避）
     try {
       const response = await fetch('/api/dify', {
@@ -47,6 +53,7 @@ export class DifyAPI {
           conversationId,
           inputs,
           responseMode,
+          appType: this.appType,
         }),
       })
 
@@ -117,6 +124,10 @@ export class DifyAPI {
     } finally {
       reader.releaseLock()
     }
+  }
+
+  getAppType(): 'chat' | 'workflow' {
+    return this.appType
   }
 }
 
