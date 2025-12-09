@@ -140,7 +140,7 @@ export function AppManager() {
                   placeholder="https://api.dify.ai/v1"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-gray-700 mt-1">
                   ワークフローアプリの場合: https://api.dify.ai/v1/workflows/run<br />
                   チャットアプリの場合: https://api.dify.ai/v1
                 </p>
@@ -182,7 +182,7 @@ export function AppManager() {
                     setIsOpen(false)
                     setIsEditing(null)
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
                 >
                   キャンセル
                 </button>
@@ -214,20 +214,20 @@ export function AppManager() {
                   {app.description}
                 </div>
               )}
-              <div className="text-xs text-gray-600 mt-1">
+              <div className="text-xs text-gray-700 mt-1">
                 作成者: {app.createdBy || '不明'}
               </div>
             </div>
             <div className="flex items-center gap-2 ml-4">
               <button
                 onClick={() => handleEdit(app)}
-                className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                className="p-1.5 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
               >
                 <Edit2 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleDelete(app.id)}
-                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                className="p-1.5 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

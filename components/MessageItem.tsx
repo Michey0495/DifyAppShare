@@ -46,7 +46,7 @@ export function MessageItem({ message }: MessageItemProps) {
         </div>
         <div
           className={`text-xs mt-1 ${
-            isUser ? 'text-blue-100' : 'text-gray-600'
+            isUser ? 'text-blue-100' : 'text-gray-700'
           }`}
         >
           {timestamp}

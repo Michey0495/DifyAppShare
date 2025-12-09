@@ -58,7 +58,7 @@ export function AppSelector({
                 >
                   <div className="font-medium">{app.name}</div>
                   {app.description && (
-                    <div className="text-xs text-gray-600 truncate mt-0.5">
+                    <div className="text-xs text-gray-700 truncate mt-0.5">
                       {app.description}
                     </div>
                   )}
