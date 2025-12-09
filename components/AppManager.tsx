@@ -13,6 +13,7 @@ export function AppManager() {
   const updateApp = useAppStore((state) => state.updateApp)
   const deleteApp = useAppStore((state) => state.deleteApp)
   const maxApps = useAppStore((state) => state.maxApps)
+  const setModalOpen = useAppStore((state) => state.setModalOpen)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -38,6 +39,7 @@ export function AppManager() {
     })
     setIsEditing(null)
     setIsOpen(false)
+    setModalOpen(false)
   }
 
   const handleEdit = (app: DifyApp) => {
@@ -63,6 +65,7 @@ export function AppManager() {
       <button
         onClick={() => {
           setIsOpen(true)
+          setModalOpen(true)
           setIsEditing(null)
           setFormData({
             name: '',
@@ -88,6 +91,7 @@ export function AppManager() {
               <button
                 onClick={() => {
                   setIsOpen(false)
+                  setModalOpen(false)
                   setIsEditing(null)
                 }}
                 className="text-gray-700 hover:text-gray-900"
@@ -181,6 +185,7 @@ export function AppManager() {
                   type="button"
                   onClick={() => {
                     setIsOpen(false)
+                    setModalOpen(false)
                     setIsEditing(null)
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"

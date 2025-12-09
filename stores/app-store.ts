@@ -5,6 +5,8 @@ import { StorageService } from '@/lib/storage'
 interface AppStore {
   apps: DifyApp[]
   maxApps: number
+  isModalOpen: boolean
+  setModalOpen: (isOpen: boolean) => void
   loadApps: () => void
   addApp: (app: Omit<DifyApp, 'id' | 'createdAt' | 'updatedAt'>) => void
   updateApp: (id: string, app: Partial<DifyApp>) => void
@@ -15,6 +17,11 @@ interface AppStore {
 export const useAppStore = create<AppStore>((set, get) => ({
   apps: [],
   maxApps: 10,
+  isModalOpen: false,
+
+  setModalOpen: (isOpen) => {
+    set({ isModalOpen: isOpen })
+  },
 
   loadApps: () => {
     const apps = StorageService.getApps()

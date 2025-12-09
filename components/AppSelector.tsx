@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppStore } from '@/stores/app-store'
 import { ChevronDown } from 'lucide-react'
 
@@ -17,9 +17,17 @@ export function AppSelector({
 }: AppSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const apps = useAppStore((state) => state.apps)
+  const isModalOpen = useAppStore((state) => state.isModalOpen)
   const currentApp = currentAppId
     ? apps.find((app) => app.id === currentAppId)
     : null
+
+  // モーダルが開いている時、ドロップダウンを閉じる
+  useEffect(() => {
+    if (isModalOpen && isOpen) {
+      setIsOpen(false)
+    }
+  }, [isModalOpen, isOpen])
 
   return (
     <div className="relative">
@@ -33,13 +41,13 @@ export function AppSelector({
         <ChevronDown className="w-4 h-4 flex-shrink-0 text-gray-700" />
       </button>
 
-      {isOpen && (
+      {isOpen && !isModalOpen && (
         <>
           <div
-            className="fixed inset-0 z-30"
+            className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-xl z-40 max-h-60 overflow-y-auto relative">
+          <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-xl z-20 max-h-60 overflow-y-auto relative">
             {apps.length === 0 ? (
               <div className="px-3 py-2 text-sm text-gray-700">
                 アプリケーションが登録されていません
