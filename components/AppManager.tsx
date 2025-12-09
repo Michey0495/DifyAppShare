@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppStore } from '@/stores/app-store'
 import { DifyApp } from '@/types'
 import { Plus, X, Edit2 } from 'lucide-react'
@@ -14,6 +14,10 @@ export function AppManager() {
   const deleteApp = useAppStore((state) => state.deleteApp)
   const maxApps = useAppStore((state) => state.maxApps)
   const setModalOpen = useAppStore((state) => state.setModalOpen)
+
+  useEffect(() => {
+    setModalOpen(isOpen)
+  }, [isOpen, setModalOpen])
 
   const [formData, setFormData] = useState({
     name: '',
@@ -85,6 +89,11 @@ export function AppManager() {
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
           style={{ pointerEvents: 'auto' }}
+          onClick={() => {
+            setIsOpen(false)
+            setModalOpen(false)
+            setIsEditing(null)
+          }}
         >
           <div 
             className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto relative z-[10000]"
