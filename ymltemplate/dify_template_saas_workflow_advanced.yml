@@ -116,7 +116,7 @@ workflow:
           - 要約
           - 翻訳
           - その他
-          required: true
+          required: false
           type: select
           variable: category
       height: 150

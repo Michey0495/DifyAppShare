@@ -1,102 +1,88 @@
 # DifyAppShare YAMLテンプレート
 
 DifyAppShareアプリと連携するためのDify DSLテンプレート集。
-テキスト入力とファイル添付（画像、PDF、Office、CSV、音声、動画）を受け付ける設定が済んでいる状態で提供する。
+
+---
+
+## DifyAppShareが送る情報（重要）
+
+DifyAppShareからDifyに送られるデータは以下の2つだけ。
+
+チャットボット・チャットフローの場合:
+- query: ユーザーが入力したテキスト
+- files: 添付ファイル（アップロード済みID）
+
+ワークフローの場合:
+- inputs.question: ユーザーが入力したテキスト
+- files: 添付ファイル（アップロード済みID）
+
+ワークフローのStartノードで使える変数名は `question` に固定されている。
+それ以外の入力変数を追加する場合は required: false（任意）にすること。
+requiredにするとDifyAppShareから値が送られずエラーになる。
+
+---
+
+## 接続手順
+
+1. Difyでアプリを作成し、公開する
+2. 「バックエンドサービスAPI」のページでAPIキーを発行する
+3. DifyAppShareでアプリを登録する:
+   - アプリタイプ: チャットボット / チャットフロー / ワークフロー のいずれかを選択
+   - APIエンドポイント: `http://dify-tutorial.ezoai.jp/v1`（ベースURLのみ）
+   - APIキー: 発行した `app-` で始まるキーを貼り付け
+
+エンドポイントはどのアプリタイプでも同じベースURLでよい。
+DifyAppShareが自動的に正しいパスを付加する:
+- チャットボット・チャットフロー → /v1/chat-messages
+- ワークフロー → /v1/workflows/run
+- ファイルアップロード → /v1/files/upload
 
 ---
 
 ## テンプレート一覧
 
-### dify_template_saas_chat.yml（チャットアプリ型）
+### dify_template_saas_chat.yml（チャットボット型）
 
-会話形式のチャットアプリ。DifyAppShareからテキストとファイルを送ると、LLMが対話的に応答する。
+会話形式のアプリ。DifyAppShareからテキストとファイルを送ると、LLMが対話的に応答する。
 
-- ファイルアップロード: 全形式有効
-- opening_statement: 初回表示メッセージ（対応形式の案内付き）
-- suggested_questions: 3つのサンプル質問
-- プロンプト: pre_prompt に書き換え前提のプレースホルダーを配置
-
-用途の例: カスタマーサポート、文書Q&A、画像分析チャット
+- インポート後にやること: LLMモデルの選択、pre_promptの書き換え
+- DifyAppShareでの登録時: アプリタイプ「チャットボット」を選択
 
 ### dify_template_saas_workflow.yml（ワークフロー型 基本）
 
-Start -> LLM -> End の最小構成ワークフロー。
+Start → LLM → End の最小構成ワークフロー。
 
-- Start: `question`（テキスト、必須）+ `file`（ファイル、任意）
-- LLM: システムプロンプト + ユーザー入力 + ファイルVision有効
-- End: LLMのテキスト出力をそのまま返す
+- Start変数: question（テキスト、必須）、file（ファイル、任意）
+- インポート後にやること: LLMモデルの選択、プロンプトの書き換え
+- DifyAppShareでの登録時: アプリタイプ「ワークフロー」を選択
 
-用途の例: 文書解析、画像OCR、一問一答型の処理
+### dify_template_saas_workflow_advanced.yml（ワークフロー型 拡張）
 
-### dify_template_saas_workflow_advanced.yml（ワークフロー型 RAG+分岐付き）
+Start → LLM → End にcategory変数（任意）を追加した構成。
+LLMプロンプト内でcategoryを参照し、処理を切り替える。
 
-Start -> Knowledge Retrieval -> IF/ELSE -> LLM -> End の構成。
-
-- Start: `question`（テキスト）+ `file`（ファイル）+ `category`（セレクト: 分析/要約/翻訳/その他）
-- Knowledge Retrieval: ナレッジベース検索（データセットIDは空。インポート後に設定する）
-- IF/ELSE: categoryが「分析」かどうかで分岐（スケルトン）
-- LLM: ナレッジコンテキスト付きプロンプト + ファイルVision
-
-用途の例: 社内ナレッジRAG、カテゴリ別文書処理、多機能AIアシスタント
+- Start変数: question（テキスト、必須）、file（ファイル、任意）、category（セレクト、任意）
+- categoryはDify UI上での手動実行時に使える。DifyAppShareからは送られない
+- インポート後にやること: LLMモデルの選択、プロンプトの書き換え
+- DifyAppShareでの登録時: アプリタイプ「ワークフロー」を選択
 
 ---
 
-## Difyへのインポート手順
+## Difyでアプリを自作する場合のルール
 
-1. Dify管理画面にログインする
-2. 左メニュー「スタジオ」を開く
-3. 右上の「アプリを作成」ドロップダウンから「DSLファイルをインポート」を選ぶ
-4. テンプレートYAMLファイルをドラッグ&ドロップまたは選択してアップロード
-5. アプリが作成される
+DifyAppShareと連携するアプリを自分で作る場合、以下を守ること。
 
-インポート後に必ずやること:
-- LLMノード（またはモデル設定）でお使いのモデル（GPT-4o、Claude等）を選択する
-- プロンプトを用途に合わせて書き換える
-- advanced版はナレッジベースを紐付ける
+チャットボット・チャットフロー:
+- 特別な制約なし。通常どおりDifyでアプリを作ればDifyAppShareから使える
 
----
-
-## DifyAppShareアプリとの連携
-
-DifyAppShareは2つのアプリタイプに対応している。
-
-チャットアプリ（mode: chat）の場合:
-- APIエンドポイント末尾が `/chat-messages` になる
-- `query` にテキスト、`files` 配列にアップロード済みファイルIDを送信
-- `conversation_id` で会話を継続
-
-ワークフローアプリ（mode: workflow）の場合:
-- APIエンドポイント末尾が `/workflows/run` になる
-- `inputs.question` にテキストを格納
-- `files` 配列にアップロード済みファイルIDを送信
-- Startノードの変数名 `question` は固定（アプリ側のコードがこの名前を使う）
+ワークフロー:
+- Startノードにparagraph型の変数 `question` を必須で作る（変数名は必ず question）
+- ファイルを受け取りたい場合はfile型の変数 `file` を任意で追加する
+- それ以外の変数を追加してもよいが、必ず required: false にする
 
 ---
 
-## カスタマイズのヒント
-
-### 変数名を変えたい場合
-
-DifyAppShareの `/app/api/dify/route.ts` では、ワークフロー実行時に `query` を `inputs.question` にマッピングしている。変数名を変更する場合はアプリ側のコードも合わせて修正すること。
-
-### ファイル処理を強化したい場合
-
-- ワークフロー型なら Start と LLM の間に「ドキュメントエクストラクタ」ノードを追加し、ファイルからテキストを抽出してからLLMに渡すと精度が上がる
-- 画像の場合は LLM の Vision 機能が直接処理するので、エクストラクタは不要
-
-### 複数の分岐先を作りたい場合
-
-advanced版のIF/ELSEは2分岐のみ。カテゴリ4種に対応するには:
-- IF/ELSEを直列に繋いで「分析」「要約」「翻訳」「その他」を順番に判定する
-- または「コード実行」ノードで分岐ロジックを書き、後続ノードへの入力を切り替える
-
-### ナレッジベースが不要な場合
-
-advanced版の Knowledge Retrieval ノードを削除し、Start から直接 IF/ELSE に接続すればよい。LLMノードの context 設定も無効にする。
-
----
-
-## 対応ファイル形式一覧
+## 対応ファイル形式
 
 | 分類 | 拡張子 |
 |------|--------|
