@@ -15,7 +15,7 @@ export async function OPTIONS(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { apiEndpoint, apiKey, query, conversationId, inputs, responseMode, appType } = body
+    const { apiEndpoint, apiKey, query, conversationId, inputs, responseMode, appType, files } = body
 
     if (!apiEndpoint || !apiKey) {
       return NextResponse.json(
@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
         inputs: workflowInputs,
         response_mode: responseMode || 'streaming',
         user: 'dify-app-share-user',
+        ...(files && files.length > 0 ? { files } : {}),
       }
     } else {
       // チャットアプリの場合
@@ -85,6 +86,7 @@ export async function POST(request: NextRequest) {
         response_mode: responseMode || 'streaming',
         conversation_id: conversationId,
         user: 'dify-app-share-user',
+        ...(files && files.length > 0 ? { files } : {}),
       }
     }
 

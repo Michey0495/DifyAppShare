@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
-import { DifyChatRequest, DifyChatResponse } from '@/types'
+import { DifyChatRequest, DifyChatResponse, DifyFileReference, DifyFileUploadResponse } from '@/types'
 
 export class DifyAPI {
   private apiEndpoint: string
@@ -33,11 +33,42 @@ export class DifyAPI {
     })
   }
 
+  // Dify にファイルをアップロードし、upload_file_id とファイルタイプを返す
+  async uploadFile(file: File): Promise<{ uploadFileId: string; fileType: DifyFileReference['type'] }> {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('apiEndpoint', this.apiEndpoint)
+    formData.append('apiKey', this.apiKey)
+
+    const response = await fetch('/api/dify/upload', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!response.ok) {
+      let errorMessage = `Upload Error: ${response.status}`
+      try {
+        const errorData = await response.json()
+        if (errorData.error) errorMessage = errorData.error
+      } catch {
+        // 無視
+      }
+      throw new Error(errorMessage)
+    }
+
+    const data = await response.json()
+    return {
+      uploadFileId: data.id,
+      fileType: data.detectedType || 'document',
+    }
+  }
+
   async sendMessage(
     query: string,
     conversationId?: string,
     inputs?: Record<string, any>,
-    responseMode: 'blocking' | 'streaming' = 'streaming'
+    responseMode: 'blocking' | 'streaming' = 'streaming',
+    files?: DifyFileReference[]
   ): Promise<ReadableStream<Uint8Array> | DifyChatResponse> {
     // Next.jsのAPIルート経由でプロキシを使用（CORS問題を回避）
     try {
@@ -54,6 +85,7 @@ export class DifyAPI {
           inputs,
           responseMode,
           appType: this.appType,
+          ...(files && files.length > 0 ? { files } : {}),
         }),
       })
 

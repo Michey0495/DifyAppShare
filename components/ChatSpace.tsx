@@ -4,11 +4,11 @@ import { useState } from 'react'
 import { useSessionStore } from '@/stores/session-store'
 import { useAppStore } from '@/stores/app-store'
 import { DifyAPI } from '@/lib/dify-api'
-import { ChatMessage } from '@/types'
+import { ChatMessage, DifyFileReference } from '@/types'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
 import { AppSelector } from './AppSelector'
-import { RotateCcw, Loader2 } from 'lucide-react'
+import { RotateCcw, Loader2, Upload } from 'lucide-react'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 
@@ -24,22 +24,31 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
   const getApp = useAppStore((state) => state.getApp)
 
   const [isLoading, setIsLoading] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   if (!session) return null
 
   const app = session.appId ? getApp(session.appId) : null
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, file?: File) => {
     if (!session.appId || !app) {
       setError('アプリケーションが選択されていません')
       return
     }
+
+    // ユーザーメッセージ（添付ファイル名も記録）
+    const displayContent = file
+      ? content
+        ? `${content}\n[添付: ${file.name}]`
+        : `[添付: ${file.name}]`
+      : content
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}-user`,
       role: 'user',
-      content,
+      content: displayContent,
       timestamp: new Date().toISOString(),
+      fileName: file?.name,
     }
 
     addMessage(sessionId, userMessage)
@@ -48,7 +57,26 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
 
     try {
       const difyAPI = new DifyAPI(app.apiEndpoint, app.apiKey)
-      const stream = await difyAPI.sendMessage(content)
+
+      // ファイルがあればまずアップロード
+      let files: DifyFileReference[] | undefined
+      if (file) {
+        setIsUploading(true)
+        try {
+          const uploaded = await difyAPI.uploadFile(file)
+          files = [{
+            type: uploaded.fileType,
+            transfer_method: 'local_file',
+            upload_file_id: uploaded.uploadFileId,
+          }]
+        } finally {
+          setIsUploading(false)
+        }
+      }
+
+      // テキストが空でファイルのみの場合はデフォルトクエリをセット
+      const query = content || 'このファイルの内容を分析してください'
+      const stream = await difyAPI.sendMessage(query, undefined, undefined, 'streaming', files)
 
       if (stream instanceof ReadableStream) {
         const assistantMessage: ChatMessage = {
@@ -206,7 +234,13 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
         ) : (
           <MessageList messages={session.messages} />
         )}
-        {isLoading && (
+        {isUploading && (
+          <div className="flex items-center gap-2 text-gray-700 text-sm font-medium">
+            <Upload className="w-4 h-4 animate-pulse" />
+            <span>ファイルをアップロード中...</span>
+          </div>
+        )}
+        {isLoading && !isUploading && (
           <div className="flex items-center gap-2 text-gray-700 text-sm font-medium">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span>応答を生成中...</span>
