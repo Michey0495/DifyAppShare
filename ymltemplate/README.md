@@ -56,13 +56,12 @@ Start → LLM → End の最小構成ワークフロー。
 - インポート後にやること: LLMモデルの選択、プロンプトの書き換え
 - DifyAppShareでの登録時: アプリタイプ「ワークフロー」を選択
 
-### dify_template_saas_workflow_advanced.yml（ワークフロー型 拡張）
+### dify_template_saas_workflow_advanced.yml（ワークフロー型 多機能）
 
-Start → LLM → End にcategory変数（任意）を追加した構成。
-LLMプロンプト内でcategoryを参照し、処理を切り替える。
+Start → LLM → End の構成。基本版との違いはLLMプロンプトが多機能対応になっている点。
+分析・要約・翻訳・質問応答をユーザーの入力内容から自動判断する。
 
-- Start変数: question（テキスト、必須）、file（ファイル、任意）、category（セレクト、任意）
-- categoryはDify UI上での手動実行時に使える。DifyAppShareからは送られない
+- Start変数: question（テキスト、必須）、file（ファイル、任意）
 - インポート後にやること: LLMモデルの選択、プロンプトの書き換え
 - DifyAppShareでの登録時: アプリタイプ「ワークフロー」を選択
 
