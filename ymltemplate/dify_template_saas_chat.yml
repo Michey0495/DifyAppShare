@@ -1,124 +1,72 @@
-# ============================================================
-# DifyAppShare - チャットアプリ テンプレート
-# ============================================================
-# 用途: DifyAppShareアプリからテキスト+ファイル添付を受け取るチャットアプリ
-#
-# インポート手順:
-#   1. Dify管理画面を開く
-#   2. 「スタジオ」> 「DSLファイルをインポート」を選択
-#   3. このファイルをアップロード
-#   4. アプリが作成されたら、モデル設定でお使いのLLMを選択
-#   5. システムプロンプトを用途に合わせて書き換える
-#
-# 対応入力:
-#   - テキストメッセージ（query）
-#   - ファイル添付（画像/PDF/Office/CSV/テキスト/音声/動画）
-#
-# カスタマイズのポイント:
-#   - pre_prompt のシステムプロンプトを書き換えてください
-#   - モデルは Dify UI 上で変更してください
-#   - opening_statement は初回表示メッセージです。自由に書き換えてください
-# ============================================================
-
 app:
   description: 'DifyAppShareからのテキスト入力とファイル添付を処理するチャットアプリ。システムプロンプトを書き換えて用途に合わせてください。'
   icon: "\U0001F4AC"
   icon_background: '#E8F5E9'
   mode: chat
-  name: 'DifyAppShare Chat Template'
+  name: DifyAppShare Chat Template
   use_icon_as_answer_icon: false
 kind: app
-version: 0.1.5
+version: '0.1.5'
 model_config:
-  model:
-    provider: ''
-    name: ''
-    mode: chat
-    completion_params:
-      temperature: 0.7
-      top_p: 1
-      max_tokens: 4096
-  pre_prompt: |
-    あなたは優秀なAIアシスタントです。
-    ユーザーからのテキスト入力やファイル添付を受け取り、適切に処理してください。
-
-    【このプロンプトをカスタマイズしてください】
-    - ここにアプリの目的や振る舞いのルールを記述します
-    - 例: 「添付されたPDFの内容を要約してください」
-    - 例: 「画像の内容を分析して説明してください」
-    - 例: 「CSVデータを集計して報告してください」
-  user_input_form: []
-  opening_statement: |
-    こんにちは。テキストを入力するか、ファイルを添付して質問してください。
-
-    対応ファイル形式:
-    - 画像 (JPG, PNG, GIF, WebP)
-    - 文書 (PDF, Word, Excel, PowerPoint)
-    - データ (CSV, JSON, XML, TXT, Markdown, HTML)
-    - 音声 (MP3, WAV)
-    - 動画 (MP4, WebM, MOV)
-  suggested_questions:
-    - 'このファイルの内容を要約してください'
-    - '添付した画像について説明してください'
-    - '添付データを分析してください'
-  file_upload:
-    enabled: true
-    allowed_file_types:
-      - image
-      - document
-      - audio
-      - video
-      - custom
-    allowed_file_extensions:
-      - .jpg
-      - .jpeg
-      - .png
-      - .gif
-      - .webp
-      - .pdf
-      - .doc
-      - .docx
-      - .xls
-      - .xlsx
-      - .ppt
-      - .pptx
-      - .csv
-      - .txt
-      - .md
-      - .json
-      - .xml
-      - .html
-      - .mp3
-      - .wav
-      - .mp4
-      - .webm
-      - .mov
-    allowed_file_upload_methods:
-      - local_file
-      - remote_url
-    number_limits: 1
-    image:
-      enabled: true
-      number_limits: 1
-      transfer_methods:
-        - local_file
-        - remote_url
-  sensitive_word_avoidance:
-    enabled: false
-  speech_to_text:
-    enabled: false
-  text_to_speech:
-    enabled: false
-  suggested_questions_after_answer:
-    enabled: false
-  retriever_resource:
-    enabled: false
   agent_mode:
     enabled: false
+    max_iteration: 5
+    strategy: function_call
     tools: []
+  annotation_reply:
+    enabled: false
+  chat_prompt_config: {}
+  completion_prompt_config: {}
   dataset_configs:
     datasets:
       datasets: []
     retrieval_model: single
+  dataset_query_variable: ''
+  external_data_tools: []
+  file_upload:
+    image:
+      detail: high
+      enabled: true
+      number_limits: 3
+      transfer_methods:
+      - local_file
+      - remote_url
+  model:
+    completion_params:
+      frequency_penalty: 0
+      max_tokens: 4096
+      presence_penalty: 0
+      temperature: 0.7
+      top_p: 1
+    mode: chat
+    name: ''
+    provider: ''
   more_like_this:
     enabled: false
+  opening_statement: |-
+    こんにちは。テキストを入力するか、ファイルを添付して質問してください。
+    対応形式: 画像、PDF、Office文書、CSV、テキスト、音声、動画
+  pre_prompt: |-
+    あなたは優秀なAIアシスタントです。
+    ユーザーからのテキスト入力やファイル添付を受け取り、適切に処理してください。
+
+    【このプロンプトをカスタマイズしてください】
+    用途に応じた指示をここに記述します。
+  prompt_type: simple
+  retriever_resource:
+    enabled: false
+  sensitive_word_avoidance:
+    enabled: false
+  speech_to_text:
+    enabled: false
+  suggested_questions:
+  - このファイルの内容を要約してください
+  - 添付した画像について説明してください
+  - 添付データを分析してください
+  suggested_questions_after_answer:
+    enabled: false
+  text_to_speech:
+    enabled: false
+    language: ''
+    voice: ''
+  user_input_form: []

@@ -1,95 +1,26 @@
-# ============================================================
-# DifyAppShare - ワークフローアプリ テンプレート（RAG+条件分岐付き）
-# ============================================================
-# 用途: テキスト+ファイル入力を受け取り、カテゴリ別に処理を分岐するワークフロー
-#
-# インポート手順:
-#   1. Dify管理画面を開く
-#   2. 「スタジオ」> 「DSLファイルをインポート」を選択
-#   3. このファイルをアップロード
-#   4. ナレッジ検索ノードで実際のナレッジベースを紐付ける
-#   5. LLMノードでお使いのモデルを選択
-#   6. 各プロンプトを用途に合わせて書き換える
-#
-# ノード構成:
-#   Start --> Knowledge Retrieval --> IF/ELSE --> LLM(分析) --> End
-#                                           |--> LLM(要約) --> End
-#                                           |--> LLM(翻訳) --> End
-#                                           |--> LLM(その他) --> End
-#
-# ※ 実際はIF/ELSEの出力をLLMに繋ぎ直す必要があります。
-#   このテンプレートでは Start -> Knowledge -> IF/ELSE -> LLM -> End の
-#   直列パスのみ接続しています。分岐先はDify UI上で追加してください。
-#
-# 入力変数:
-#   - question (paragraph, 必須) : テキスト入力
-#   - file (file, 任意) : 添付ファイル
-#   - category (select, 必須) : 処理カテゴリ（分析/要約/翻訳/その他）
-#
-# カスタマイズのポイント:
-#   - ナレッジ検索ノードにナレッジベースIDを設定してください
-#   - IF/ELSE条件を調整し、分岐先のLLMノードをそれぞれ追加してください
-#   - 各カテゴリ用のプロンプトを個別のLLMノードとして作ると効果的です
-# ============================================================
-
 app:
-  description: 'DifyAppShareからの入力をカテゴリ別に分岐処理するワークフロー。RAGとIF/ELSE分岐のスケルトン付き。'
+  description: 'DifyAppShareからの入力をカテゴリ変数付きで処理するワークフロー。IF/ELSE分岐を自分で追加するためのスケルトン。'
   icon: "\U0001F9E9"
   icon_background: '#FFF3E0'
   mode: workflow
-  name: 'DifyAppShare Advanced Workflow Template'
+  name: DifyAppShare Advanced Workflow Template
   use_icon_as_answer_icon: false
 kind: app
-version: 0.1.5
+version: '0.1.5'
 workflow:
   conversation_variables: []
   environment_variables: []
   features:
     file_upload:
-      allowed_file_extensions:
-        - .jpg
-        - .jpeg
-        - .png
-        - .gif
-        - .webp
-        - .pdf
-        - .doc
-        - .docx
-        - .xls
-        - .xlsx
-        - .ppt
-        - .pptx
-        - .csv
-        - .txt
-        - .md
-        - .json
-        - .xml
-        - .html
-        - .mp3
-        - .wav
-        - .mp4
-        - .webm
-        - .mov
-      allowed_file_types:
-        - image
-        - document
-        - audio
-        - video
-        - custom
-      allowed_file_upload_methods:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
         - local_file
         - remote_url
-      enabled: true
-      image:
-        enabled: true
-        number_limits: 1
-        transfer_methods:
-          - local_file
-          - remote_url
-      number_limits: 1
     opening_statement: ''
     retriever_resource:
-      enabled: true
+      enabled: false
     sensitive_word_avoidance:
       enabled: false
     speech_to_text:
@@ -99,283 +30,190 @@ workflow:
       enabled: false
     text_to_speech:
       enabled: false
+      language: ''
+      voice: ''
   graph:
     edges:
-      # Start --> Knowledge Retrieval
-      - data:
-          isInIteration: false
-          sourceType: start
-          targetType: knowledge-retrieval
-        id: 'edge-start-to-knowledge'
-        source: 'start'
-        sourceHandle: source
-        target: 'knowledge-1'
-        targetHandle: target
-        type: custom
-        zIndex: 0
-      # Knowledge Retrieval --> IF/ELSE
-      - data:
-          isInIteration: false
-          sourceType: knowledge-retrieval
-          targetType: if-else
-        id: 'edge-knowledge-to-ifelse'
-        source: 'knowledge-1'
-        sourceHandle: source
-        target: 'ifelse-1'
-        targetHandle: target
-        type: custom
-        zIndex: 0
-      # IF/ELSE (true: 分析) --> LLM
-      - data:
-          isInIteration: false
-          sourceType: if-else
-          targetType: llm
-        id: 'edge-ifelse-true-to-llm'
-        source: 'ifelse-1'
-        sourceHandle: 'true'
-        target: 'llm-1'
-        targetHandle: target
-        type: custom
-        zIndex: 0
-      # IF/ELSE (false: その他) --> LLM
-      # ※ 要約・翻訳の分岐先LLMノードはDify UI上で追加してください
-      - data:
-          isInIteration: false
-          sourceType: if-else
-          targetType: llm
-        id: 'edge-ifelse-false-to-llm'
-        source: 'ifelse-1'
-        sourceHandle: 'false'
-        target: 'llm-1'
-        targetHandle: target
-        type: custom
-        zIndex: 0
-      # LLM --> End
-      - data:
-          isInIteration: false
-          sourceType: llm
-          targetType: end
-        id: 'edge-llm-to-end'
-        source: 'llm-1'
-        sourceHandle: source
-        target: 'end-1'
-        targetHandle: target
-        type: custom
-        zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: llm
+      id: '1700000100001-source-1700000100002-target'
+      source: '1700000100001'
+      sourceHandle: source
+      target: '1700000100002'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: end
+      id: '1700000100002-source-1700000100003-target'
+      source: '1700000100002'
+      sourceHandle: source
+      target: '1700000100003'
+      targetHandle: target
+      type: custom
+      zIndex: 0
     nodes:
-      # --------------------------------------------------
-      # Start ノード - 入力変数を定義（3つの入力）
-      # --------------------------------------------------
-      - data:
-          desc: 'DifyAppShareアプリからの入力を受け取ります。categoryはアプリ側で送信するか、Dify UIで入力させます。'
-          selected: false
-          title: 開始
-          type: start
-          variables:
-            - label: 質問・要望
-              max_length: 2000
-              options: []
-              required: true
-              type: paragraph
-              variable: question
-            - label: 添付ファイル
-              allowed_file_extensions:
-                - .jpg
-                - .jpeg
-                - .png
-                - .gif
-                - .webp
-                - .pdf
-                - .doc
-                - .docx
-                - .xls
-                - .xlsx
-                - .ppt
-                - .pptx
-                - .csv
-                - .txt
-                - .md
-                - .json
-                - .xml
-                - .html
-                - .mp3
-                - .wav
-                - .mp4
-                - .webm
-                - .mov
-              allowed_file_types:
-                - image
-                - document
-                - audio
-                - video
-                - custom
-              allowed_file_upload_methods:
-                - local_file
-                - remote_url
-              max_length: 0
-              options: []
-              required: false
-              type: file
-              variable: file
-            - label: 処理カテゴリ
-              max_length: 0
-              options:
-                - '分析'
-                - '要約'
-                - '翻訳'
-                - 'その他'
-              required: true
-              type: select
-              variable: category
-        height: 150
-        id: 'start'
-        position:
-          x: 80
-          y: 282
-        positionAbsolute:
-          x: 80
-          y: 282
-        type: custom
-        width: 244
+    - data:
+        desc: ''
+        selected: false
+        title: 開始
+        type: start
+        variables:
+        - label: 質問・要望
+          max_length: 2000
+          options: []
+          required: true
+          type: paragraph
+          variable: question
+        - allowed_file_extensions:
+          - .jpg
+          - .jpeg
+          - .png
+          - .gif
+          - .webp
+          - .svg
+          - .pdf
+          - .doc
+          - .docx
+          - .xls
+          - .xlsx
+          - .ppt
+          - .pptx
+          - .csv
+          - .txt
+          - .md
+          - .json
+          - .xml
+          - .html
+          - .mp3
+          - .wav
+          - .mp4
+          - .webm
+          - .mov
+          allowed_file_types:
+          - image
+          - document
+          - audio
+          - video
+          - custom
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 添付ファイル
+          max_length: 0
+          options: []
+          required: false
+          type: file
+          variable: file
+        - label: 処理カテゴリ
+          max_length: 0
+          options:
+          - 分析
+          - 要約
+          - 翻訳
+          - その他
+          required: true
+          type: select
+          variable: category
+      height: 150
+      id: '1700000100001'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: c3d4e5f6-a7b8-9012-cdef-123456789012
+          role: system
+          text: |-
+            あなたは優秀なAIアシスタントです。
+            ユーザーの質問に対して、カテゴリに応じた処理を実行してください。
 
-      # --------------------------------------------------
-      # Knowledge Retrieval ノード - ナレッジベースを設定してください
-      # --------------------------------------------------
-      - data:
-          desc: 'ナレッジベースから関連情報を検索します。Dify UIでナレッジベースを紐付けてください。不要なら削除してStartからIF/ELSEに直接繋いでもOKです。'
-          selected: false
-          title: ナレッジ検索
-          type: knowledge-retrieval
-          query_variable_selector:
-            - start
-            - question
-          dataset_ids: []
-          retrieval_mode: multiple
-          multiple_retrieval_config:
-            top_k: 3
-            score_threshold: 0.5
-            reranking_enable: false
-          single_retrieval_config:
-            model:
-              provider: ''
-              name: ''
-              mode: chat
-              completion_params: {}
-        height: 100
-        id: 'knowledge-1'
-        position:
-          x: 380
-          y: 282
-        positionAbsolute:
-          x: 380
-          y: 282
-        type: custom
-        width: 244
+            処理カテゴリ: {{#1700000100001.category#}}
 
-      # --------------------------------------------------
-      # IF/ELSE ノード - カテゴリによる分岐
-      # --------------------------------------------------
-      - data:
-          desc: 'categoryの値で処理を分岐します。true側=「分析」、false側=それ以外。要約・翻訳ごとに分けたい場合はIF/ELSEノードを追加してください。'
-          selected: false
-          title: カテゴリ分岐
-          type: if-else
-          conditions:
-            - comparison_operator: is
-              id: 'condition-1'
-              value: '分析'
-              variable_selector:
-                - start
-                - category
-        height: 126
-        id: 'ifelse-1'
-        position:
-          x: 680
-          y: 282
-        positionAbsolute:
-          x: 680
-          y: 282
-        type: custom
-        width: 244
+            カテゴリ別の指示:
+            - 分析: データや文書の詳細な分析を行う
+            - 要約: 内容を簡潔にまとめる
+            - 翻訳: 指定言語に翻訳する
+            - その他: 汎用的な質問応答
 
-      # --------------------------------------------------
-      # LLM ノード - コンテキスト付きプロンプト
-      # --------------------------------------------------
-      - data:
-          desc: 'ナレッジ検索の結果をコンテキストとして受け取り、カテゴリに応じた処理を実行します。分岐先ごとにLLMノードを複製してプロンプトを変えると効果的です。'
-          selected: false
-          title: LLM
-          type: llm
-          model:
-            provider: ''
-            name: ''
-            mode: chat
-            completion_params:
-              temperature: 0.7
-              top_p: 1
-              max_tokens: 4096
-          prompt_template:
-            - role: system
-              text: |
-                あなたは優秀なAIアシスタントです。
-                ユーザーの質問に対して、検索されたナレッジ情報とファイルの内容を踏まえて回答してください。
+            ファイルが添付されている場合、その内容も踏まえて回答してください。
 
-                処理カテゴリ: {{#start.category#}}
-
-                【カテゴリ別の指示をここに書いてください】
-                - 分析: データや文書の詳細な分析を行う
-                - 要約: 内容を簡潔にまとめる
-                - 翻訳: 指定言語に翻訳する
-                - その他: 汎用的な質問応答
-
-                検索されたナレッジ情報:
-                {{#context#}}
-            - role: user
-              text: |
-                {{#start.question#}}
-          vision:
-            enabled: true
-            configs:
-              variable_selector:
-                - start
-                - file
-          context:
-            enabled: true
+            【このプロンプトを書き換えてください】
+            IF/ELSEノードを追加してカテゴリ別に分岐させることも可能です。
+            ナレッジ検索ノードを追加してRAGを実現することもできます。
+        - id: d4e5f6a7-b8c9-0123-defa-234567890123
+          role: user
+          text: '{{#1700000100001.question#}}'
+        selected: false
+        title: LLM
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
             variable_selector:
-              - knowledge-1
-              - result
-          memory: null
-        height: 98
-        id: 'llm-1'
-        position:
-          x: 980
-          y: 282
-        positionAbsolute:
-          x: 980
-          y: 282
-        type: custom
-        width: 244
-
-      # --------------------------------------------------
-      # End ノード - LLMの出力を返す
-      # --------------------------------------------------
-      - data:
-          desc: 'LLMの応答をアプリに返します'
-          selected: false
-          title: 終了
-          type: end
-          outputs:
-            - value_selector:
-                - llm-1
-                - text
-              variable: text
-        height: 90
-        id: 'end-1'
-        position:
-          x: 1280
-          y: 282
-        positionAbsolute:
-          x: 1280
-          y: 282
-        type: custom
-        width: 244
+            - '1700000100001'
+            - file
+          enabled: true
+      height: 98
+      id: '1700000100002'
+      position:
+        x: 384
+        y: 282
+      positionAbsolute:
+        x: 384
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - '1700000100002'
+          - text
+          variable: output
+        selected: false
+        title: 終了
+        type: end
+      height: 90
+      id: '1700000100003'
+      position:
+        x: 688
+        y: 282
+      positionAbsolute:
+        x: 688
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: 0
+      y: 0
+      zoom: 1
