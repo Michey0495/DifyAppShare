@@ -92,7 +92,7 @@ export function SingleChatView() {
     setError(null)
 
     try {
-      const difyAPI = new DifyAPI(selectedApp.apiEndpoint, selectedApp.apiKey)
+      const difyAPI = new DifyAPI(selectedApp.apiEndpoint, selectedApp.apiKey, selectedApp.appType)
 
       let files: DifyFileReference[] | undefined
       if (file) {

@@ -10,18 +10,7 @@ export class DifyAPI {
   constructor(apiEndpoint: string, apiKey: string, appType?: 'chat' | 'workflow') {
     this.apiEndpoint = apiEndpoint
     this.apiKey = apiKey
-    
-    // アプリタイプの自動判定
-    if (appType) {
-      this.appType = appType
-    } else {
-      const endpoint = apiEndpoint.endsWith('/') 
-        ? apiEndpoint.slice(0, -1) 
-        : apiEndpoint
-      this.appType = endpoint.includes('/workflows/run') || endpoint.endsWith('/workflows/run')
-        ? 'workflow'
-        : 'chat'
-    }
+    this.appType = appType || 'chat'
 
     this.axiosInstance = axios.create({
       baseURL: apiEndpoint,

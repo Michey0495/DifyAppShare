@@ -25,6 +25,7 @@ export function AppManager() {
     apiEndpoint: '',
     apiKey: '',
     createdBy: '',
+    appType: 'chat' as 'chat' | 'workflow',
   })
 
   const openModal = () => {
@@ -36,7 +37,7 @@ export function AppManager() {
     setIsOpen(false)
     setModalOpen(false)
     setIsEditing(null)
-    setFormData({ name: '', description: '', apiEndpoint: '', apiKey: '', createdBy: '' })
+    setFormData({ name: '', description: '', apiEndpoint: '', apiKey: '', createdBy: '', appType: 'chat' })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -56,6 +57,7 @@ export function AppManager() {
       apiEndpoint: app.apiEndpoint,
       apiKey: app.apiKey,
       createdBy: app.createdBy,
+      appType: app.appType || 'chat',
     })
     setIsEditing(app.id)
     openModal()
@@ -76,7 +78,7 @@ export function AppManager() {
         <button
           onClick={() => {
             setIsEditing(null)
-            setFormData({ name: '', description: '', apiEndpoint: '', apiKey: '', createdBy: '' })
+            setFormData({ name: '', description: '', apiEndpoint: '', apiKey: '', createdBy: '', appType: 'chat' })
             openModal()
           }}
           className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
@@ -125,6 +127,39 @@ export function AppManager() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  アプリタイプ
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, appType: 'chat' })}
+                    className={`flex-1 px-3.5 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                      formData.appType === 'chat'
+                        ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    チャットアプリ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, appType: 'workflow' })}
+                    className={`flex-1 px-3.5 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                      formData.appType === 'workflow'
+                        ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    ワークフロー
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400 mt-1.5">
+                  Difyで作成したアプリのタイプを選択してください
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   説明
                 </label>
                 <textarea
@@ -148,10 +183,8 @@ export function AppManager() {
                   placeholder="https://api.dify.ai/v1"
                   className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-colors"
                 />
-                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                  チャットアプリ: https://api.dify.ai/v1
-                  <br />
-                  ワークフロー: https://api.dify.ai/v1/workflows/run
+                <p className="text-xs text-slate-400 mt-1.5">
+                  ベースURLのみ入力（例: https://api.dify.ai/v1）
                 </p>
               </div>
 

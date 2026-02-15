@@ -29,24 +29,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // エンドポイントの正規化
-    const endpoint = apiEndpoint.endsWith('/') 
-      ? apiEndpoint.slice(0, -1) 
+    // エンドポイントの正規化: 末尾スラッシュ、/chat-messages、/workflows/run を除去してベースURLにする
+    let baseUrl = apiEndpoint.endsWith('/')
+      ? apiEndpoint.slice(0, -1)
       : apiEndpoint
+    baseUrl = baseUrl.replace(/\/(chat-messages|workflows\/run)$/, '')
 
-    // アプリタイプの判定（エンドポイントURLから自動判定）
-    const isWorkflow = appType === 'workflow' || 
-                       endpoint.includes('/workflows/run') ||
-                       endpoint.endsWith('/workflows/run')
+    // アプリタイプの判定（明示的なappTypeを優先、なければURLから推定）
+    const isWorkflow = appType === 'workflow' ||
+                       (!appType && (apiEndpoint.includes('/workflows/run')))
 
     let url: string
     let requestData: any
 
     if (isWorkflow) {
       // ワークフローアプリの場合
-      url = endpoint.endsWith('/workflows/run')
-        ? endpoint
-        : `${endpoint}/workflows/run`
+      url = `${baseUrl}/workflows/run`
 
       // ワークフローアプリはqueryではなくinputsに含める
       // 入力変数名は 'question' に固定（段落形式の256文字）
@@ -76,9 +74,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      url = endpoint.endsWith('/chat-messages') 
-        ? endpoint 
-        : `${endpoint}/chat-messages`
+      url = `${baseUrl}/chat-messages`
 
       requestData = {
         inputs: inputs || {},

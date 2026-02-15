@@ -53,7 +53,7 @@ export function ChatSpace({ sessionId }: ChatSpaceProps) {
     setError(null)
 
     try {
-      const difyAPI = new DifyAPI(app.apiEndpoint, app.apiKey)
+      const difyAPI = new DifyAPI(app.apiEndpoint, app.apiKey, app.appType)
 
       let files: DifyFileReference[] | undefined
       if (file) {
