@@ -5,9 +5,19 @@ import { useAppStore } from '@/stores/app-store'
 import { DifyApp } from '@/types'
 import { Plus, X, Edit2 } from 'lucide-react'
 
+// コピペ時の不可視文字・引用符・改行を除去
+function sanitizeInput(value: string): string {
+  return value
+    .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, '')
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .replace(/[\r\n\t]/g, '')
+    .trim()
+}
+
 export function AppManager() {
   const [isOpen, setIsOpen] = useState(false)
   const [isEditing, setIsEditing] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
   const apps = useAppStore((state) => state.apps)
   const addApp = useAppStore((state) => state.addApp)
   const updateApp = useAppStore((state) => state.updateApp)
@@ -37,15 +47,37 @@ export function AppManager() {
     setIsOpen(false)
     setModalOpen(false)
     setIsEditing(null)
+    setFormError(null)
     setFormData({ name: '', description: '', apiEndpoint: '', apiKey: '', createdBy: '', appType: 'chat' })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setFormError(null)
+
+    // 保存前にサニタイズ
+    const cleanData = {
+      ...formData,
+      apiEndpoint: sanitizeInput(formData.apiEndpoint),
+      apiKey: sanitizeInput(formData.apiKey),
+    }
+
+    // APIキーのバリデーション
+    if (!cleanData.apiKey.startsWith('app-')) {
+      setFormError('APIキーは「app-」で始まる文字列です。DifyのバックエンドサービスAPIページからコピーしてください。')
+      return
+    }
+
+    // エンドポイントのバリデーション
+    if (!cleanData.apiEndpoint.includes('/v1')) {
+      setFormError('エンドポイントに「/v1」が含まれていません。DifyのAPIページに表示されるベースURLをそのまま貼り付けてください。')
+      return
+    }
+
     if (isEditing) {
-      updateApp(isEditing, formData)
+      updateApp(isEditing, cleanData)
     } else {
-      addApp(formData)
+      addApp(cleanData)
     }
     closeModal()
   }
@@ -175,6 +207,11 @@ export function AppManager() {
                   type="url"
                   value={formData.apiEndpoint}
                   onChange={(e) => setFormData({ ...formData, apiEndpoint: e.target.value })}
+                  onPaste={(e) => {
+                    e.preventDefault()
+                    const pasted = sanitizeInput(e.clipboardData.getData('text'))
+                    setFormData({ ...formData, apiEndpoint: pasted })
+                  }}
                   required
                   placeholder="http://dify-tutorial.ezoai.jp/v1"
                   className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-colors"
@@ -189,13 +226,21 @@ export function AppManager() {
                   APIキー
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   value={formData.apiKey}
                   onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+                  onPaste={(e) => {
+                    e.preventDefault()
+                    const pasted = sanitizeInput(e.clipboardData.getData('text'))
+                    setFormData({ ...formData, apiKey: pasted })
+                  }}
                   required
                   placeholder="app-xxxxxxxxxxxx"
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 font-mono text-xs transition-colors"
                 />
+                <p className="text-xs text-slate-400 mt-1.5">
+                  DifyのバックエンドサービスAPIページで発行したキー
+                </p>
               </div>
 
               <div>
@@ -210,6 +255,12 @@ export function AppManager() {
                   className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-colors"
                 />
               </div>
+
+              {formError && (
+                <div className="px-3.5 py-2.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+                  {formError}
+                </div>
+              )}
 
               <div className="flex justify-end gap-2 pt-2">
                 <button

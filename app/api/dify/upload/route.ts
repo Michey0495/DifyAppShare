@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// APIキーとエンドポイントのサニタイズ
+function sanitizeInput(value: string): string {
+  return value
+    .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, '')
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .replace(/[\r\n\t]/g, '')
+    .trim()
+}
+
 // MIMEタイプからDifyのファイルタイプを判定
 function detectDifyFileType(mimeType: string): 'image' | 'document' | 'audio' | 'video' | 'custom' {
   if (mimeType.startsWith('image/')) return 'image'
@@ -31,8 +40,8 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
-    const apiEndpoint = formData.get('apiEndpoint') as string | null
-    const apiKey = formData.get('apiKey') as string | null
+    const apiEndpoint = sanitizeInput((formData.get('apiEndpoint') as string) || '')
+    const apiKey = sanitizeInput((formData.get('apiKey') as string) || '')
 
     if (!file || !apiEndpoint || !apiKey) {
       return NextResponse.json(

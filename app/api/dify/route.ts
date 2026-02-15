@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// APIキーとエンドポイントのサニタイズ
+// コピペ時の不可視文字、引用符、改行をすべて除去
+function sanitizeInput(value: string): string {
+  return value
+    .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, '') // ゼロ幅文字・NBSP除去
+    .replace(/^["'`]+|["'`]+$/g, '')               // 前後の引用符除去
+    .replace(/[\r\n\t]/g, '')                       // 改行・タブ除去
+    .trim()
+}
+
 // CORS preflight リクエストの処理
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {
@@ -15,12 +25,27 @@ export async function OPTIONS(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { apiEndpoint, apiKey, query, conversationId, inputs, responseMode, appType, files } = body
+    const { query, conversationId, inputs, responseMode, appType, files } = body
+    const apiEndpoint = sanitizeInput(body.apiEndpoint || '')
+    const apiKey = sanitizeInput(body.apiKey || '')
 
     if (!apiEndpoint || !apiKey) {
       return NextResponse.json(
         { error: 'Missing required parameters: apiEndpoint or apiKey' },
-        { 
+        {
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
+        }
+      )
+    }
+
+    // APIキーの形式チェック
+    if (!apiKey.startsWith('app-')) {
+      return NextResponse.json(
+        { error: `APIキーの形式が正しくありません。「app-」で始まるキーを入力してください（現在の先頭: "${apiKey.substring(0, 6)}..."）` },
+        {
           status: 400,
           headers: {
             'Access-Control-Allow-Origin': '*',
@@ -86,6 +111,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // デバッグログ（キーの先頭のみ表示）
+    const maskedKey = apiKey.length > 8
+      ? `${apiKey.substring(0, 8)}...(${apiKey.length}文字)`
+      : `${apiKey}(${apiKey.length}文字)`
+    console.log(`[Dify API] url=${url}, appType=${appType || 'auto'}, key=${maskedKey}`)
+
     // サーバー側からDify APIにリクエストを送信（CORS問題を回避）
     const response = await fetch(url, {
       method: 'POST',
@@ -111,9 +142,16 @@ export async function POST(request: NextRequest) {
           errorMessage = text.substring(0, 200)
         }
       }
+
+      // 401エラーの場合、ユーザーに分かりやすいガイドを付加
+      if (response.status === 401) {
+        console.error(`[Dify API] 認証エラー: key=${maskedKey}, url=${url}`)
+        errorMessage = `APIキーが無効です（キー先頭: ${apiKey.substring(0, 8)}...）。以下を確認してください: (1) DifyでアプリのAPIキーを再発行する (2) アプリが「公開」状態か確認する (3) キーをコピーし直して再登録する`
+      }
+
       return NextResponse.json(
         { error: errorMessage },
-        { 
+        {
           status: response.status,
           headers: {
             'Access-Control-Allow-Origin': '*',
