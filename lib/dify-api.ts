@@ -4,10 +4,10 @@ import { DifyChatRequest, DifyChatResponse, DifyFileReference, DifyFileUploadRes
 export class DifyAPI {
   private apiEndpoint: string
   private apiKey: string
-  private appType: 'chat' | 'workflow'
+  private appType: 'chat' | 'chatflow' | 'workflow'
   private axiosInstance: AxiosInstance
 
-  constructor(apiEndpoint: string, apiKey: string, appType?: 'chat' | 'workflow') {
+  constructor(apiEndpoint: string, apiKey: string, appType?: 'chat' | 'chatflow' | 'workflow') {
     this.apiEndpoint = apiEndpoint
     this.apiKey = apiKey
     this.appType = appType || 'chat'
@@ -147,7 +147,7 @@ export class DifyAPI {
     }
   }
 
-  getAppType(): 'chat' | 'workflow' {
+  getAppType(): 'chat' | 'chatflow' | 'workflow' {
     return this.appType
   }
 }

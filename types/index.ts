@@ -7,7 +7,7 @@ export interface DifyApp {
   createdBy: string
   createdAt: string
   updatedAt: string
-  appType?: 'chat' | 'workflow' // アプリタイプ（自動判定も可能）
+  appType?: 'chat' | 'chatflow' | 'workflow'
 }
 
 export interface ChatSession {
