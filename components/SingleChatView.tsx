@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSessionStore } from '@/stores/session-store'
 import { useAppStore } from '@/stores/app-store'
 import { DifyAPI } from '@/lib/dify-api'
-import { ChatMessage, DifyFileReference, DifyApp } from '@/types'
+import { ChatMessage, DifyFileReference } from '@/types'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
 import { AppManager } from './AppManager'
@@ -13,18 +13,18 @@ import {
   Loader2,
   Upload,
   MessageSquare,
-  ChevronLeft,
-  Plus,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react'
 
 export function SingleChatView() {
   const apps = useAppStore((state) => state.apps)
   const getApp = useAppStore((state) => state.getApp)
-  const sessions = useSessionStore((state) => state.sessions)
   const createSession = useSessionStore((state) => state.createSession)
   const addMessage = useSessionStore((state) => state.addMessage)
   const resetSession = useSessionStore((state) => state.resetSession)
   const assignApp = useSessionStore((state) => state.assignApp)
+  const allSessions = useSessionStore((state) => state.sessions)
 
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -33,17 +33,14 @@ export function SingleChatView() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // 初回: アプリが登録済みなら先頭を選択
   useEffect(() => {
     if (!selectedAppId && apps.length > 0) {
       setSelectedAppId(apps[0].id)
     }
   }, [apps, selectedAppId])
 
-  // チャットビュー用のセッションIDを生成
   const chatSessionId = selectedAppId ? `chat-view-${selectedAppId}` : null
 
-  // 選択中アプリのセッションが無ければ作成
   useEffect(() => {
     if (chatSessionId && selectedAppId) {
       const existing = useSessionStore.getState().getSession(chatSessionId)
@@ -57,14 +54,11 @@ export function SingleChatView() {
     }
   }, [chatSessionId, selectedAppId, createSession, assignApp, getApp])
 
-  // sessionsの変更を監視して再レンダリングをトリガー
-  const allSessions = useSessionStore((state) => state.sessions)
   const session = chatSessionId
     ? allSessions.find((s) => s.sessionId === chatSessionId) ?? null
     : null
   const selectedApp = selectedAppId ? getApp(selectedAppId) : null
 
-  // メッセージが追加されたら自動スクロール
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [session?.messages.length])
@@ -147,15 +141,11 @@ export function SingleChatView() {
           if (isWorkflow) {
             if (chunk.event === 'text_chunk' && chunk.data?.text) {
               fullContent += chunk.data.text
-              const updatedMessage: ChatMessage = {
-                ...assistantMessage,
-                content: fullContent,
-              }
               const cs =
                 useSessionStore.getState().getSession(chatSessionId)
               if (cs) {
                 const msgs = [...cs.messages]
-                msgs[messageIndex] = updatedMessage
+                msgs[messageIndex] = { ...assistantMessage, content: fullContent }
                 useSessionStore.getState().updateSession(chatSessionId, {
                   messages: msgs,
                 })
@@ -165,13 +155,7 @@ export function SingleChatView() {
               chunk.data?.outputs
             ) {
               const outputs = chunk.data.outputs
-              const textKeys = [
-                'text',
-                'output',
-                'result',
-                'answer',
-                'response',
-              ]
+              const textKeys = ['text', 'output', 'result', 'answer', 'response']
               for (const key of textKeys) {
                 if (outputs[key] && typeof outputs[key] === 'string') {
                   fullContent = outputs[key]
@@ -181,36 +165,28 @@ export function SingleChatView() {
               if (!fullContent && Object.keys(outputs).length > 0) {
                 fullContent = JSON.stringify(outputs, null, 2)
               }
-              const updatedMessage: ChatMessage = {
-                ...assistantMessage,
-                content: fullContent || 'ワークフローが完了しました',
-              }
               const cs =
                 useSessionStore.getState().getSession(chatSessionId)
               if (cs) {
                 const msgs = [...cs.messages]
-                msgs[messageIndex] = updatedMessage
+                msgs[messageIndex] = {
+                  ...assistantMessage,
+                  content: fullContent || 'ワークフローが完了しました',
+                }
                 useSessionStore.getState().updateSession(chatSessionId, {
                   messages: msgs,
                 })
               }
             }
           } else {
-            if (
-              chunk.event === 'message' ||
-              chunk.event === 'message_end'
-            ) {
+            if (chunk.event === 'message' || chunk.event === 'message_end') {
               if (chunk.answer) {
                 fullContent += chunk.answer
-                const updatedMessage: ChatMessage = {
-                  ...assistantMessage,
-                  content: fullContent,
-                }
                 const cs =
                   useSessionStore.getState().getSession(chatSessionId)
                 if (cs) {
                   const msgs = [...cs.messages]
-                  msgs[messageIndex] = updatedMessage
+                  msgs[messageIndex] = { ...assistantMessage, content: fullContent }
                   useSessionStore.getState().updateSession(chatSessionId, {
                     messages: msgs,
                   })
@@ -252,80 +228,80 @@ export function SingleChatView() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-73px)]">
+    <div className="flex h-[calc(100vh-57px)]">
       {/* サイドバー */}
-      <div
+      <aside
         className={`${
-          sidebarOpen ? 'w-72' : 'w-0'
-        } transition-all duration-200 overflow-hidden border-r border-gray-200 bg-white flex flex-col shrink-0`}
+          sidebarOpen ? 'w-[280px]' : 'w-0'
+        } transition-all duration-200 overflow-hidden bg-slate-50/70 border-r border-slate-200/80 flex flex-col shrink-0`}
       >
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">
-            登録アプリ
-          </h2>
+        {/* アプリ管理セクション */}
+        <div className="px-4 pt-5 pb-3 border-b border-slate-200/60">
           <AppManager />
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        {/* アプリ一覧 */}
+        <div className="flex-1 overflow-y-auto py-1">
           {apps.length === 0 ? (
-            <div className="p-4 text-sm text-gray-500">
+            <div className="px-4 py-8 text-center text-sm text-slate-400">
               アプリが未登録です
             </div>
           ) : (
-            <div className="py-2">
-              {apps.map((app) => (
+            apps.map((app) => {
+              const isActive = selectedAppId === app.id
+              return (
                 <button
                   key={app.id}
                   onClick={() => handleSelectApp(app.id)}
-                  className={`w-full text-left px-4 py-3 transition-colors ${
-                    selectedAppId === app.id
-                      ? 'bg-blue-50 border-r-2 border-blue-500'
-                      : 'hover:bg-gray-50'
+                  className={`w-full text-left px-4 py-2.5 transition-colors ${
+                    isActive
+                      ? 'bg-indigo-50/80 border-l-2 border-indigo-500'
+                      : 'border-l-2 border-transparent hover:bg-slate-100'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <MessageSquare
-                      className={`w-4 h-4 shrink-0 ${
-                        selectedAppId === app.id
-                          ? 'text-blue-600'
-                          : 'text-gray-400'
+                  <div className="flex items-start gap-2.5">
+                    <div
+                      className={`mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-semibold ${
+                        isActive
+                          ? 'bg-indigo-100 text-indigo-700'
+                          : 'bg-slate-200/70 text-slate-500'
                       }`}
-                    />
+                    >
+                      {app.name.charAt(0).toUpperCase()}
+                    </div>
                     <div className="min-w-0 flex-1">
                       <div
                         className={`text-sm font-medium truncate ${
-                          selectedAppId === app.id
-                            ? 'text-blue-900'
-                            : 'text-gray-900'
+                          isActive ? 'text-indigo-900' : 'text-slate-800'
                         }`}
                       >
                         {app.name}
                       </div>
                       {app.description && (
-                        <div className="text-xs text-gray-500 truncate mt-0.5">
+                        <div className="text-xs text-slate-400 truncate mt-0.5 leading-relaxed">
                           {app.description}
                         </div>
                       )}
                     </div>
                   </div>
                 </button>
-              ))}
-            </div>
+              )
+            })
           )}
         </div>
-      </div>
+      </aside>
 
-      {/* サイドバー開閉トグル */}
+      {/* サイドバートグル */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="self-center -ml-px px-1 py-6 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-r-md transition-colors z-10"
+        className="self-start mt-3 -ml-px px-1 py-3 bg-slate-50 hover:bg-slate-100 border border-l-0 border-slate-200/80 rounded-r-md transition-colors"
         title={sidebarOpen ? 'サイドバーを閉じる' : 'サイドバーを開く'}
       >
-        <ChevronLeft
-          className={`w-4 h-4 text-gray-500 transition-transform ${
-            sidebarOpen ? '' : 'rotate-180'
-          }`}
-        />
+        {sidebarOpen ? (
+          <PanelLeftClose className="w-3.5 h-3.5 text-slate-400" />
+        ) : (
+          <PanelLeftOpen className="w-3.5 h-3.5 text-slate-400" />
+        )}
       </button>
 
       {/* メインチャットエリア */}
@@ -333,20 +309,25 @@ export function SingleChatView() {
         {selectedApp ? (
           <>
             {/* チャットヘッダー */}
-            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-gray-50 shrink-0">
-              <div className="min-w-0">
-                <h3 className="text-base font-semibold text-gray-900 truncate">
-                  {selectedApp.name}
-                </h3>
-                {selectedApp.description && (
-                  <p className="text-xs text-gray-500 truncate mt-0.5">
-                    {selectedApp.description}
-                  </p>
-                )}
+            <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                  <MessageSquare className="w-4 h-4 text-indigo-600" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-slate-900 truncate">
+                    {selectedApp.name}
+                  </h3>
+                  {selectedApp.description && (
+                    <p className="text-xs text-slate-400 truncate">
+                      {selectedApp.description}
+                    </p>
+                  )}
+                </div>
               </div>
               <button
                 onClick={handleReset}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors shrink-0"
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
                 title="会話をリセット"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -354,40 +335,48 @@ export function SingleChatView() {
             </div>
 
             {/* メッセージエリア */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="flex-1 overflow-y-auto">
               {session && session.messages.length > 0 ? (
-                <div className="max-w-3xl mx-auto space-y-4">
+                <div className="max-w-2xl mx-auto px-6 py-6 space-y-5">
                   <MessageList messages={session.messages} />
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <div className="text-center text-gray-400">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-3" />
-                    <p className="text-sm">
-                      メッセージを入力して会話を始めてください
+                  <div className="text-center px-6">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+                      <MessageSquare className="w-6 h-6 text-slate-300" />
+                    </div>
+                    <p className="text-sm text-slate-400 leading-relaxed">
+                      メッセージを入力して
+                      <br />
+                      会話を始めてください
                     </p>
                   </div>
                 </div>
               )}
-              {isUploading && (
-                <div className="max-w-3xl mx-auto mt-4">
-                  <div className="flex items-center gap-2 text-gray-500 text-sm">
-                    <Upload className="w-4 h-4 animate-pulse" />
-                    <span>ファイルをアップロード中...</span>
+
+              {/* ローディング表示 */}
+              {(isUploading || isLoading) && (
+                <div className="max-w-2xl mx-auto px-6 pb-4">
+                  <div className="flex items-center gap-2 text-slate-400 text-sm">
+                    {isUploading ? (
+                      <>
+                        <Upload className="w-4 h-4 animate-pulse" />
+                        <span>アップロード中...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>応答を生成中...</span>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
-              {isLoading && !isUploading && (
-                <div className="max-w-3xl mx-auto mt-4">
-                  <div className="flex items-center gap-2 text-gray-500 text-sm">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>応答を生成中...</span>
-                  </div>
-                </div>
-              )}
+
               {error && (
-                <div className="max-w-3xl mx-auto mt-4">
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="max-w-2xl mx-auto px-6 pb-4">
+                  <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm">
                     {error}
                   </div>
                 </div>
@@ -396,8 +385,8 @@ export function SingleChatView() {
             </div>
 
             {/* 入力エリア */}
-            <div className="border-t border-gray-200 bg-white px-6 py-4 shrink-0">
-              <div className="max-w-3xl mx-auto">
+            <div className="border-t border-slate-100 bg-white px-6 py-4 shrink-0">
+              <div className="max-w-2xl mx-auto">
                 <MessageInput
                   onSend={handleSendMessage}
                   disabled={isLoading}
@@ -407,12 +396,16 @@ export function SingleChatView() {
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            <div className="text-center">
-              <MessageSquare className="w-16 h-16 mx-auto mb-4" />
-              <p className="text-lg mb-2">アプリを選択してください</p>
-              <p className="text-sm">
-                左のサイドバーからDifyアプリを選んで会話を始められます
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center px-6">
+              <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-5">
+                <MessageSquare className="w-7 h-7 text-slate-300" />
+              </div>
+              <p className="text-base text-slate-400 mb-1">
+                アプリを選択してください
+              </p>
+              <p className="text-sm text-slate-300">
+                サイドバーからDifyアプリを選んで会話を始められます
               </p>
             </div>
           </div>

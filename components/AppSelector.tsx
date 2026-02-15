@@ -24,28 +24,27 @@ export function AppSelector({
     ? apps.find((app) => app.id === currentAppId)
     : null
 
-  // モーダルが開いている時、ドロップダウンを強制的に閉じる
   useEffect(() => {
-    if (isModalOpen) {
-      setIsOpen(false)
-    }
+    if (isModalOpen) setIsOpen(false)
   }, [isModalOpen])
 
-  // ドロップダウンの位置を計算（モーダルが閉じている時のみ）
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 200 })
-  
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 200,
+  })
+
   useEffect(() => {
     if (isOpen && !isModalOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
       setDropdownPosition({
         top: rect.bottom + 4,
         left: rect.left,
-        width: rect.width,
+        width: Math.max(rect.width, 220),
       })
     }
   }, [isOpen, isModalOpen])
 
-  // モーダルが開いている時は、ドロップダウンを絶対に表示しない
   const shouldShowDropdown = !isModalOpen && isOpen
 
   return (
@@ -53,60 +52,76 @@ export function AppSelector({
       <button
         ref={buttonRef}
         onClick={() => {
-          if (!isModalOpen) {
-            setIsOpen(!isOpen)
-          }
+          if (!isModalOpen) setIsOpen(!isOpen)
         }}
         disabled={isModalOpen}
-        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium min-w-[200px] text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-slate-300 text-sm min-w-[180px] text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        <span className="flex-1 text-left truncate">
+        {currentApp && (
+          <div className="w-5 h-5 rounded bg-indigo-50 flex items-center justify-center shrink-0 text-[10px] font-semibold text-indigo-600">
+            {currentApp.name.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <span className="flex-1 text-left truncate font-medium">
           {currentApp ? currentApp.name : 'アプリを選択'}
         </span>
-        <ChevronDown className="w-4 h-4 flex-shrink-0 text-gray-700" />
+        <ChevronDown className="w-3.5 h-3.5 shrink-0 text-slate-400" />
       </button>
 
-      {/* モーダルが開いている時は絶対にドロップダウンを表示しない */}
       {shouldShowDropdown && (
         <>
           <div
             className="fixed inset-0 z-[1]"
             onClick={() => setIsOpen(false)}
           />
-          <div 
+          <div
             ref={dropdownRef}
-            className="fixed z-[2] max-h-60 overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-xl"
+            className="fixed z-[2] max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg"
             style={{
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
               width: `${dropdownPosition.width}px`,
-              minWidth: '200px',
             }}
           >
             {apps.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-gray-700">
-                アプリケーションが登録されていません
+              <div className="px-3 py-3 text-sm text-slate-400">
+                アプリ未登録
               </div>
             ) : (
-              apps.map((app) => (
-                <button
-                  key={app.id}
-                  onClick={() => {
-                    onSelect(app.id)
-                    setIsOpen(false)
-                  }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 transition-colors ${
-                    currentAppId === app.id ? 'bg-blue-50 text-blue-700' : 'text-gray-900'
-                  }`}
-                >
-                  <div className="font-medium">{app.name}</div>
-                  {app.description && (
-                    <div className="text-xs text-gray-700 truncate mt-0.5">
-                      {app.description}
+              <div className="py-1">
+                {apps.map((app) => (
+                  <button
+                    key={app.id}
+                    onClick={() => {
+                      onSelect(app.id)
+                      setIsOpen(false)
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors ${
+                      currentAppId === app.id
+                        ? 'bg-indigo-50 text-indigo-700'
+                        : 'text-slate-800 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div
+                      className={`w-6 h-6 rounded flex items-center justify-center shrink-0 text-[10px] font-semibold ${
+                        currentAppId === app.id
+                          ? 'bg-indigo-100 text-indigo-700'
+                          : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
+                      {app.name.charAt(0).toUpperCase()}
                     </div>
-                  )}
-                </button>
-              ))
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium truncate">{app.name}</div>
+                      {app.description && (
+                        <div className="text-xs text-slate-400 truncate mt-0.5">
+                          {app.description}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         </>
@@ -114,4 +129,3 @@ export function AppSelector({
     </div>
   )
 }
-

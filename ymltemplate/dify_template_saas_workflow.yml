@@ -1,0 +1,255 @@
+# ============================================================
+# DifyAppShare - ワークフローアプリ テンプレート（基本）
+# ============================================================
+# 用途: DifyAppShareアプリからテキスト+ファイルを受け取り、LLMで処理するワークフロー
+#
+# インポート手順:
+#   1. Dify管理画面を開く
+#   2. 「スタジオ」> 「DSLファイルをインポート」を選択
+#   3. このファイルをアップロード
+#   4. LLMノードでお使いのモデルを選択
+#   5. プロンプトを用途に合わせて書き換える
+#
+# ノード構成:
+#   Start --> LLM --> End
+#
+# 入力変数:
+#   - question (paragraph, 必須) : テキスト入力
+#   - file (file, 任意) : 添付ファイル（全形式対応）
+#
+# カスタマイズのポイント:
+#   - Start と LLM の間にノードを追加できます（コード実行、HTTP、条件分岐など）
+#   - LLM の前にナレッジ検索ノードを挟めばRAGが実現できます
+#   - LLM のプロンプトは必ず書き換えてください
+# ============================================================
+
+app:
+  description: 'DifyAppShareからのテキスト・ファイル入力を処理する基本ワークフロー。Start -> LLM -> End のシンプルな構成。'
+  icon: "\U0001F527"
+  icon_background: '#E3F2FD'
+  mode: workflow
+  name: 'DifyAppShare Workflow Template'
+  use_icon_as_answer_icon: false
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+        - .jpg
+        - .jpeg
+        - .png
+        - .gif
+        - .webp
+        - .pdf
+        - .doc
+        - .docx
+        - .xls
+        - .xlsx
+        - .ppt
+        - .pptx
+        - .csv
+        - .txt
+        - .md
+        - .json
+        - .xml
+        - .html
+        - .mp3
+        - .wav
+        - .mp4
+        - .webm
+        - .mov
+      allowed_file_types:
+        - image
+        - document
+        - audio
+        - video
+        - custom
+      allowed_file_upload_methods:
+        - local_file
+        - remote_url
+      enabled: true
+      image:
+        enabled: true
+        number_limits: 1
+        transfer_methods:
+          - local_file
+          - remote_url
+      number_limits: 1
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+  graph:
+    edges:
+      - data:
+          isInIteration: false
+          sourceType: start
+          targetType: llm
+        id: 'edge-start-to-llm'
+        source: 'start'
+        sourceHandle: source
+        target: 'llm-1'
+        targetHandle: target
+        type: custom
+        zIndex: 0
+      - data:
+          isInIteration: false
+          sourceType: llm
+          targetType: end
+        id: 'edge-llm-to-end'
+        source: 'llm-1'
+        sourceHandle: source
+        target: 'end-1'
+        targetHandle: target
+        type: custom
+        zIndex: 0
+    nodes:
+      # --------------------------------------------------
+      # Start ノード - 入力変数を定義
+      # --------------------------------------------------
+      - data:
+          desc: 'DifyAppShareアプリからの入力を受け取ります'
+          selected: false
+          title: 開始
+          type: start
+          variables:
+            - label: 質問・要望
+              max_length: 2000
+              options: []
+              required: true
+              type: paragraph
+              variable: question
+            - label: 添付ファイル
+              allowed_file_extensions:
+                - .jpg
+                - .jpeg
+                - .png
+                - .gif
+                - .webp
+                - .pdf
+                - .doc
+                - .docx
+                - .xls
+                - .xlsx
+                - .ppt
+                - .pptx
+                - .csv
+                - .txt
+                - .md
+                - .json
+                - .xml
+                - .html
+                - .mp3
+                - .wav
+                - .mp4
+                - .webm
+                - .mov
+              allowed_file_types:
+                - image
+                - document
+                - audio
+                - video
+                - custom
+              allowed_file_upload_methods:
+                - local_file
+                - remote_url
+              max_length: 0
+              options: []
+              required: false
+              type: file
+              variable: file
+        height: 116
+        id: 'start'
+        position:
+          x: 80
+          y: 282
+        positionAbsolute:
+          x: 80
+          y: 282
+        type: custom
+        width: 244
+
+      # --------------------------------------------------
+      # LLM ノード - プロンプトを書き換えて使ってください
+      # --------------------------------------------------
+      - data:
+          desc: 'ユーザー入力を処理するLLMノード。プロンプトを自由にカスタマイズしてください。'
+          selected: false
+          title: LLM
+          type: llm
+          model:
+            provider: ''
+            name: ''
+            mode: chat
+            completion_params:
+              temperature: 0.7
+              top_p: 1
+              max_tokens: 4096
+          prompt_template:
+            - role: system
+              text: |
+                あなたは優秀なAIアシスタントです。
+                ユーザーの質問や要望に対して、正確で丁寧な回答を生成してください。
+
+                【このプロンプトを書き換えてください】
+                用途に応じた指示をここに記述します。
+                - 文書要約、画像分析、データ整理、翻訳、コード生成など
+                - ファイルが添付されている場合、その内容も踏まえて回答してください
+            - role: user
+              text: |
+                {{#start.question#}}
+          vision:
+            enabled: true
+            configs:
+              variable_selector:
+                - start
+                - file
+          context:
+            enabled: false
+            variable_selector: []
+          memory: null
+        height: 98
+        id: 'llm-1'
+        position:
+          x: 380
+          y: 282
+        positionAbsolute:
+          x: 380
+          y: 282
+        type: custom
+        width: 244
+
+      # --------------------------------------------------
+      # End ノード - LLMの出力をそのまま返す
+      # --------------------------------------------------
+      - data:
+          desc: 'LLMの応答をアプリに返します'
+          selected: false
+          title: 終了
+          type: end
+          outputs:
+            - value_selector:
+                - llm-1
+                - text
+              variable: text
+        height: 90
+        id: 'end-1'
+        position:
+          x: 680
+          y: 282
+        positionAbsolute:
+          x: 680
+          y: 282
+        type: custom
+        width: 244

@@ -9,7 +9,6 @@ interface MessageInputProps {
   placeholder?: string
 }
 
-// 受け付けるファイル拡張子
 const ACCEPTED_EXTENSIONS = [
   '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp',
   '.pdf',
@@ -31,14 +30,11 @@ export function MessageInput({
 
   const handleSend = () => {
     const trimmed = message.trim()
-    // テキストかファイルのどちらかがあれば送信可能
     if ((trimmed || attachedFile) && !disabled) {
       onSend(trimmed, attachedFile || undefined)
       setMessage('')
       setAttachedFile(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -49,22 +45,14 @@ export function MessageInput({
     }
   }
 
-  const handleFileSelect = () => {
-    fileInputRef.current?.click()
-  }
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      setAttachedFile(file)
-    }
+    if (file) setAttachedFile(file)
   }
 
   const handleFileRemove = () => {
     setAttachedFile(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const formatFileSize = (bytes: number): string => {
@@ -78,29 +66,28 @@ export function MessageInput({
   return (
     <div className="space-y-2">
       {attachedFile && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-800">
-          <FileText className="w-4 h-4 text-gray-500 shrink-0" />
-          <span className="truncate">{attachedFile.name}</span>
-          <span className="text-gray-500 shrink-0">
-            ({formatFileSize(attachedFile.size)})
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600">
+          <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span className="truncate max-w-[200px]">{attachedFile.name}</span>
+          <span className="text-slate-400 text-xs shrink-0">
+            {formatFileSize(attachedFile.size)}
           </span>
           <button
             onClick={handleFileRemove}
-            className="ml-auto p-0.5 text-gray-500 hover:text-gray-700 rounded transition-colors"
-            title="ファイルを取り消す"
+            className="p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
       <div className="flex items-end gap-2">
         <button
-          onClick={handleFileSelect}
+          onClick={() => fileInputRef.current?.click()}
           disabled={disabled}
-          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title="ファイルを添付"
         >
-          <Paperclip className="w-5 h-5" />
+          <Paperclip className="w-[18px] h-[18px]" />
         </button>
         <input
           ref={fileInputRef}
@@ -116,15 +103,15 @@ export function MessageInput({
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 placeholder:text-gray-500"
-          style={{ minHeight: '40px', maxHeight: '120px' }}
+          className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl resize-none text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 disabled:bg-slate-100 disabled:cursor-not-allowed transition-colors"
+          style={{ minHeight: '42px', maxHeight: '120px' }}
         />
         <button
           onClick={handleSend}
           disabled={!canSend}
-          className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-[18px] h-[18px]" />
         </button>
       </div>
     </div>

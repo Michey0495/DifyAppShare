@@ -27,6 +27,18 @@ export function AppManager() {
     createdBy: '',
   })
 
+  const openModal = () => {
+    setIsOpen(true)
+    setModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsOpen(false)
+    setModalOpen(false)
+    setIsEditing(null)
+    setFormData({ name: '', description: '', apiEndpoint: '', apiKey: '', createdBy: '' })
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (isEditing) {
@@ -34,16 +46,7 @@ export function AppManager() {
     } else {
       addApp(formData)
     }
-    setFormData({
-      name: '',
-      description: '',
-      apiEndpoint: '',
-      apiKey: '',
-      createdBy: '',
-    })
-    setIsEditing(null)
-    setIsOpen(false)
-    setModalOpen(false)
+    closeModal()
   }
 
   const handleEdit = (app: DifyApp) => {
@@ -55,7 +58,7 @@ export function AppManager() {
       createdBy: app.createdBy,
     })
     setIsEditing(app.id)
-    setIsOpen(true)
+    openModal()
   }
 
   const handleDelete = (id: string) => {
@@ -66,151 +69,130 @@ export function AppManager() {
 
   return (
     <>
-      <button
-        onClick={() => {
-          setIsOpen(true)
-          setModalOpen(true)
-          setIsEditing(null)
-          setFormData({
-            name: '',
-            description: '',
-            apiEndpoint: '',
-            apiKey: '',
-            createdBy: '',
-          })
-        }}
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-      >
-        <Plus className="w-4 h-4" />
-        アプリを追加
-      </button>
-
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-          style={{ pointerEvents: 'auto' }}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-slate-400">
+          {apps.length} / {maxApps}
+        </span>
+        <button
           onClick={() => {
-            setIsOpen(false)
-            setModalOpen(false)
             setIsEditing(null)
+            setFormData({ name: '', description: '', apiEndpoint: '', apiKey: '', createdBy: '' })
+            openModal()
           }}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
         >
-          <div 
-            className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto relative z-[10000]"
-            style={{ pointerEvents: 'auto' }}
+          <Plus className="w-3.5 h-3.5" />
+          追加
+        </button>
+      </div>
+
+      {/* モーダル */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999]"
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-base font-semibold text-slate-900">
                 {isEditing ? 'アプリを編集' : 'アプリを追加'}
               </h2>
               <button
-                onClick={() => {
-                  setIsOpen(false)
-                  setModalOpen(false)
-                  setIsEditing(null)
-                }}
-                className="text-gray-700 hover:text-gray-900"
+                onClick={closeModal}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-900">
-                  アプリ名 *
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  アプリ名
                 </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-colors"
+                  placeholder="プロジェクト報告アシスタント"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-900">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   説明
                 </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={2}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 resize-none transition-colors"
+                  placeholder="このアプリの用途を入力"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-900">
-                  APIエンドポイント *
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  APIエンドポイント
                 </label>
                 <input
                   type="url"
                   value={formData.apiEndpoint}
-                  onChange={(e) =>
-                    setFormData({ ...formData, apiEndpoint: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, apiEndpoint: e.target.value })}
                   required
                   placeholder="https://api.dify.ai/v1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-colors"
                 />
-                <p className="text-xs text-gray-700 mt-1">
-                  ワークフローアプリ: https://api.dify.ai/v1/workflows/run<br />
-                  チャットアプリ: https://api.dify.ai/v1<br />
-                  <span className="text-gray-700">※エンドポイントURLから自動判定されます</span>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  チャットアプリ: https://api.dify.ai/v1
+                  <br />
+                  ワークフロー: https://api.dify.ai/v1/workflows/run
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-900">
-                  APIキー *
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  APIキー
                 </label>
                 <input
                   type="password"
                   value={formData.apiKey}
-                  onChange={(e) =>
-                    setFormData({ ...formData, apiKey: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
+                  placeholder="app-xxxxxxxxxxxx"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-900">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   作成者名
                 </label>
                 <input
                   type="text"
                   value={formData.createdBy}
-                  onChange={(e) =>
-                    setFormData({ ...formData, createdBy: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
+                  onChange={(e) => setFormData({ ...formData, createdBy: e.target.value })}
+                  placeholder="任意"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-colors"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-4">
+              <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsOpen(false)
-                    setModalOpen(false)
-                    setIsEditing(null)
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-900"
+                  onClick={closeModal}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
                 >
                   キャンセル
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  className="px-5 py-2 text-sm font-medium bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
                 >
                   {isEditing ? '更新' : '追加'}
                 </button>
@@ -220,38 +202,40 @@ export function AppManager() {
         </div>
       )}
 
-      <div className="mt-4 space-y-2">
-              <div className="text-sm text-gray-700 font-medium">
-                登録済み: {apps.length} / {maxApps}
-              </div>
+      {/* アプリ一覧（Grid view用） */}
+      <div className="mt-3 space-y-1.5">
         {apps.map((app) => (
           <div
             key={app.id}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group"
           >
-              <div className="flex-1 min-w-0">
-              <div className="font-medium truncate text-gray-900">{app.name}</div>
-              {app.description && (
-                <div className="text-sm text-gray-700 truncate mt-1">
-                  {app.description}
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0 text-xs font-semibold text-indigo-600">
+                {app.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-slate-800 truncate">
+                  {app.name}
                 </div>
-              )}
-              <div className="text-xs text-gray-700 mt-1">
-                作成者: {app.createdBy || '不明'}
+                {app.description && (
+                  <div className="text-xs text-slate-400 truncate mt-0.5">
+                    {app.description}
+                  </div>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-2 ml-4">
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
               <button
                 onClick={() => handleEdit(app)}
-                className="p-1.5 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg transition-colors"
               >
-                <Edit2 className="w-4 h-4" />
+                <Edit2 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => handleDelete(app.id)}
-                className="p-1.5 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -260,4 +244,3 @@ export function AppManager() {
     </>
   )
 }
-
