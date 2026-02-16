@@ -1,0 +1,516 @@
+app:
+  description: 'プロジェクトの進捗メモを入力すると、情報抽出・定量分析・リスク評価・改善提案・報告書生成の5段階で処理し、上司に提出できる週次報告書を自動生成するワークフロー。DifyAppShareから利用可能。'
+  icon: "\U0001F4CA"
+  icon_background: '#E3F2FD'
+  mode: workflow
+  name: 週次プロジェクト報告書ジェネレーター
+  use_icon_as_answer_icon: false
+kind: app
+version: '0.1.5'
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: llm
+      id: '1700000300001-source-1700000300002-target'
+      source: '1700000300001'
+      sourceHandle: source
+      target: '1700000300002'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000300002-source-1700000300003-target'
+      source: '1700000300002'
+      sourceHandle: source
+      target: '1700000300003'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000300003-source-1700000300004-target'
+      source: '1700000300003'
+      sourceHandle: source
+      target: '1700000300004'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000300004-source-1700000300005-target'
+      source: '1700000300004'
+      sourceHandle: source
+      target: '1700000300005'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000300005-source-1700000300006-target'
+      source: '1700000300005'
+      sourceHandle: source
+      target: '1700000300006'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: end
+      id: '1700000300006-source-1700000300007-target'
+      source: '1700000300006'
+      sourceHandle: source
+      target: '1700000300007'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 開始
+        type: start
+        variables:
+        - label: プロジェクト進捗メモ
+          max_length: 5000
+          options: []
+          required: true
+          type: paragraph
+          variable: question
+        - allowed_file_extensions:
+          - .jpg
+          - .jpeg
+          - .png
+          - .gif
+          - .webp
+          - .svg
+          - .pdf
+          - .doc
+          - .docx
+          - .xls
+          - .xlsx
+          - .ppt
+          - .pptx
+          - .csv
+          - .txt
+          - .md
+          - .json
+          - .xml
+          - .html
+          - .mp3
+          - .wav
+          - .mp4
+          - .webm
+          - .mov
+          allowed_file_types:
+          - image
+          - document
+          - audio
+          - video
+          - custom
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 参考資料
+          max_length: 0
+          options: []
+          required: false
+          type: file
+          variable: file
+      height: 116
+      id: '1700000300001'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: '入力テキストからプロジェクト情報を項目別に抽出'
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: a1b20001-e5f6-4890-abcd-ef1234567001
+          role: system
+          text: |-
+            あなたはプロジェクト情報の抽出スペシャリストです。
+            入力されたテキストから以下の項目を正確に抽出し、整理して出力してください。
+
+            【プロジェクト概要】
+            プロジェクト名（推定可）と報告対象期間
+
+            【完了タスク】
+            今週完了したタスクを箇条書き
+
+            【進行中タスク】
+            現在進行中のタスクを箇条書き（進捗率がわかれば付記）
+
+            【遅延・問題タスク】
+            遅延や問題が発生しているタスクを箇条書き（原因も記載）
+
+            【人員情報】
+            メンバーの状況（不在、異動など）
+
+            【次週予定】
+            来週以降の予定や計画
+
+            テキストに記載のない項目は「記載なし」としてください。
+            推測は最小限にし、入力テキストの事実を優先してください。
+        - id: a1b20001-e5f6-4890-abcd-ef1234567002
+          role: user
+          text: '{{#1700000300001.question#}}'
+        selected: false
+        title: STEP1 情報抽出
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+            variable_selector:
+            - '1700000300001'
+            - file
+          enabled: true
+      height: 98
+      id: '1700000300002'
+      position:
+        x: 384
+        y: 282
+      positionAbsolute:
+        x: 384
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 'タスク状況から進捗率やスケジュール遵守率を数値で評価'
+        model:
+          completion_params:
+            temperature: 0.3
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: a1b20002-e5f6-4890-abcd-ef1234567001
+          role: system
+          text: |-
+            あなたはプロジェクトの定量分析を行う専門家です。
+            前段で抽出された情報を基に、以下の定量評価を行ってください。
+
+            1. 全体進捗率: XX%
+            完了タスクと残タスクの比率から推定し、根拠を示す
+
+            2. スケジュール遵守率
+            予定通り進んでいるタスクの割合を推定
+
+            3. 残作業量
+            未完了タスクの数と想定される作業規模
+
+            4. 完了見通し
+            現在のペースで全体が完了する時期の見込み
+
+            数値は必ず具体的に記載してください。
+            推定の根拠も簡潔に添えてください。
+        - id: a1b20002-e5f6-4890-abcd-ef1234567002
+          role: user
+          text: '{{#1700000300002.text#}}'
+        selected: false
+        title: STEP2 定量分析
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+          enabled: false
+      height: 98
+      id: '1700000300003'
+      position:
+        x: 688
+        y: 282
+      positionAbsolute:
+        x: 688
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: '遅延やボトルネックからリスクを識別し影響度を評価'
+        model:
+          completion_params:
+            temperature: 0.4
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: a1b20003-e5f6-4890-abcd-ef1234567001
+          role: system
+          text: |-
+            あなたはリスク管理の専門家です。
+            プロジェクトの抽出情報と定量分析の結果を基に、リスク分析を行ってください。
+
+            以下の形式で最大5つのリスクを識別してください。
+
+            リスク1: リスクの名称
+            - 発生可能性: 高/中/低
+            - 影響度: 高/中/低
+            - 現在の兆候: テキストから読み取れる具体的根拠
+            - 放置した場合: 想定される影響
+
+            最後に、プロジェクト全体のリスクレベルを高/中/低で総合判定し、
+            その判定理由を2行程度で説明してください。
+        - id: a1b20003-e5f6-4890-abcd-ef1234567002
+          role: user
+          text: |-
+            抽出された情報:
+            {{#1700000300002.text#}}
+
+            定量分析の結果:
+            {{#1700000300003.text#}}
+        selected: false
+        title: STEP3 リスク評価
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+          enabled: false
+      height: 98
+      id: '1700000300004'
+      position:
+        x: 992
+        y: 282
+      positionAbsolute:
+        x: 992
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 'リスクに対応する具体的な改善アクションを3つ提案'
+        model:
+          completion_params:
+            temperature: 0.6
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: a1b20004-e5f6-4890-abcd-ef1234567001
+          role: system
+          text: |-
+            あなたはプロジェクト改善のアドバイザーです。
+            リスク分析と定量分析の結果を受けて、具体的な改善提案を3つ作成してください。
+
+            各提案は以下の形式で記載してください。
+
+            提案1: タイトル
+            - 対象リスク: どのリスクへの対策か
+            - アクション: 具体的に何をするか
+            - 担当: 誰が実施すべきか（推定可）
+            - 期限: いつまでに着手すべきか
+            - 期待効果: 実施による改善見込み
+
+            提案は翌週から着手可能な具体性を持たせてください。
+            漠然とした提案は避け、アクション可能な内容にしてください。
+        - id: a1b20004-e5f6-4890-abcd-ef1234567002
+          role: user
+          text: |-
+            リスク分析の結果:
+            {{#1700000300004.text#}}
+
+            定量分析の結果:
+            {{#1700000300003.text#}}
+        selected: false
+        title: STEP4 改善提案
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+          enabled: false
+      height: 98
+      id: '1700000300005'
+      position:
+        x: 1296
+        y: 282
+      positionAbsolute:
+        x: 1296
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: '全分析結果を統合し整形済みの週次報告書を出力'
+        model:
+          completion_params:
+            temperature: 0.5
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: a1b20005-e5f6-4890-abcd-ef1234567001
+          role: system
+          text: |-
+            あなたはビジネスレポートの作成者です。
+            ここまでの全分析結果を統合し、上司に提出可能な週次進捗報告書を作成してください。
+
+            以下の構成で報告書を作成してください。
+
+            ========================================
+            週次プロジェクト進捗報告書
+            ========================================
+
+            ■ サマリー
+            プロジェクトの現状を3行以内で要約
+
+            ■ 進捗状況
+            完了タスク、進行中タスク、遅延タスクを整理して記載
+            全体進捗率も明記
+
+            ■ 定量評価
+            主要な数値指標を箇条書きで記載
+
+            ■ リスクと課題
+            識別されたリスクを優先度順に記載
+
+            ■ 改善アクション
+            提案された対策を期限付きで列挙
+
+            ■ 次週の計画
+            来週実施すべきアクション項目を列挙
+
+            ========================================
+
+            読み手は経営層や上司を想定してください。
+            簡潔かつ正確で、すぐにアクションを取れる報告書にしてください。
+        - id: a1b20005-e5f6-4890-abcd-ef1234567002
+          role: user
+          text: |-
+            元の入力テキスト:
+            {{#1700000300001.question#}}
+
+            STEP1 抽出情報:
+            {{#1700000300002.text#}}
+
+            STEP2 定量分析:
+            {{#1700000300003.text#}}
+
+            STEP3 リスク評価:
+            {{#1700000300004.text#}}
+
+            STEP4 改善提案:
+            {{#1700000300005.text#}}
+        selected: false
+        title: STEP5 報告書生成
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+          enabled: false
+      height: 98
+      id: '1700000300006'
+      position:
+        x: 1600
+        y: 282
+      positionAbsolute:
+        x: 1600
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - '1700000300006'
+          - text
+          variable: output
+        selected: false
+        title: 終了
+        type: end
+      height: 90
+      id: '1700000300007'
+      position:
+        x: 1904
+        y: 282
+      positionAbsolute:
+        x: 1904
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: 0
+      y: 0
+      zoom: 1

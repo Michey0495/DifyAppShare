@@ -1,0 +1,627 @@
+app:
+  description: '週次メモとプロジェクト資料を入力すると、分析結果を4種類の成果物（レポート・メール・チャット投稿・アクションアイテム）に同時変換するファンアウト型ワークフロー。DifyAppShareから利用可能。'
+  icon: "\U0001F4CB"
+  icon_background: '#E8F5E9'
+  mode: workflow
+  name: マルチ成果物ジェネレーター
+  use_icon_as_answer_icon: false
+kind: app
+version: '0.1.5'
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: llm
+      id: '1700000400001-source-1700000400002-target'
+      source: '1700000400001'
+      sourceHandle: source
+      target: '1700000400002'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000400002-source-1700000400003-target'
+      source: '1700000400002'
+      sourceHandle: source
+      target: '1700000400003'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000400002-source-1700000400004-target'
+      source: '1700000400002'
+      sourceHandle: source
+      target: '1700000400004'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000400002-source-1700000400005-target'
+      source: '1700000400002'
+      sourceHandle: source
+      target: '1700000400005'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000400002-source-1700000400006-target'
+      source: '1700000400002'
+      sourceHandle: source
+      target: '1700000400006'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000400003-source-1700000400007-target'
+      source: '1700000400003'
+      sourceHandle: source
+      target: '1700000400007'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000400004-source-1700000400007-target'
+      source: '1700000400004'
+      sourceHandle: source
+      target: '1700000400007'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000400005-source-1700000400007-target'
+      source: '1700000400005'
+      sourceHandle: source
+      target: '1700000400007'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: llm
+      id: '1700000400006-source-1700000400007-target'
+      source: '1700000400006'
+      sourceHandle: source
+      target: '1700000400007'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: end
+      id: '1700000400007-source-1700000400008-target'
+      source: '1700000400007'
+      sourceHandle: source
+      target: '1700000400008'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 開始
+        type: start
+        variables:
+        - label: 週次メモ・進捗報告
+          max_length: 5000
+          options: []
+          required: true
+          type: paragraph
+          variable: question
+        - allowed_file_extensions:
+          - .jpg
+          - .jpeg
+          - .png
+          - .gif
+          - .webp
+          - .svg
+          - .pdf
+          - .doc
+          - .docx
+          - .xls
+          - .xlsx
+          - .ppt
+          - .pptx
+          - .csv
+          - .txt
+          - .md
+          - .json
+          - .xml
+          - .html
+          - .mp3
+          - .wav
+          - .mp4
+          - .webm
+          - .mov
+          allowed_file_types:
+          - image
+          - document
+          - audio
+          - video
+          - custom
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: プロジェクト資料
+          max_length: 0
+          options: []
+          required: false
+          type: file
+          variable: file
+      height: 116
+      id: '1700000400001'
+      position:
+        x: 80
+        y: 350
+      positionAbsolute:
+        x: 80
+        y: 350
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: '週次メモと添付資料から情報を抽出し、後続の成果物生成に必要な分析を一括で行う'
+        model:
+          completion_params:
+            temperature: 0.3
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: b1c20001-a5f6-4890-abcd-ef1234500001
+          role: system
+          text: |-
+            あなたはプロジェクト分析の専門家です。
+            入力された週次メモと参考資料（添付がある場合）を読み、以下の項目を整理してください。
+
+            【プロジェクト概要】
+            プロジェクト名と報告対象期間（推定可）
+
+            【今週の成果】
+            完了したタスクを箇条書き
+
+            【進行中の作業】
+            進行中タスクと進捗率を箇条書き
+
+            【課題・遅延】
+            問題が発生しているタスク、原因、影響を箇条書き
+
+            【リスク】
+            識別されたリスクと発生可能性・影響度（高/中/低）
+
+            【数値指標】
+            全体進捗率とスケジュール遵守率の推定（根拠も記載）
+
+            【次週の予定】
+            計画されているタスクと目標
+
+            【要対応事項】
+            即座に対応が必要な項目
+
+            テキストに記載のない項目は「記載なし」としてください。
+            この出力は4種類の成果物生成に使われます。漏れなく正確に抽出してください。
+        - id: b1c20001-a5f6-4890-abcd-ef1234500002
+          role: user
+          text: '{{#1700000400001.question#}}'
+        selected: false
+        title: 情報抽出・分析
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+            variable_selector:
+            - '1700000400001'
+            - file
+          enabled: true
+      height: 98
+      id: '1700000400002'
+      position:
+        x: 384
+        y: 350
+      positionAbsolute:
+        x: 384
+        y: 350
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: '分析結果をマークダウン形式の整形レポートに変換'
+        model:
+          completion_params:
+            temperature: 0.4
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: b1c20002-a5f6-4890-abcd-ef1234500001
+          role: system
+          text: |-
+            あなたは週次レポートの作成者です。
+            分析結果を基に、マークダウン形式の整形された週次進捗レポートを作成してください。
+
+            以下の構成で作成:
+
+            # [プロジェクト名] 週次進捗レポート
+
+            ## サマリー
+            3行以内のエグゼクティブサマリー
+
+            ## 進捗状況
+            | タスク | ステータス | 進捗率 | 備考 |
+            |--------|-----------|--------|------|
+            の表形式で整理
+
+            ## 課題とリスク
+            優先度順に箇条書き
+
+            ## 今週の成果
+            完了したタスクを箇条書き
+
+            ## 来週の計画
+            予定タスクを箇条書き
+
+            ## 数値サマリー
+            主要指標を箇条書き
+
+            マークダウン記法を正しく使い、そのままドキュメントとして使える品質にしてください。
+        - id: b1c20002-a5f6-4890-abcd-ef1234500002
+          role: user
+          text: '{{#1700000400002.text#}}'
+        selected: false
+        title: 週次レポート
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+          enabled: false
+      height: 98
+      id: '1700000400003'
+      position:
+        x: 720
+        y: 50
+      positionAbsolute:
+        x: 720
+        y: 50
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: '分析結果を上司報告用のビジネスメール下書きに変換'
+        model:
+          completion_params:
+            temperature: 0.5
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: b1c20003-a5f6-4890-abcd-ef1234500001
+          role: system
+          text: |-
+            あなたはビジネスメールの作成者です。
+            分析結果を基に、上司やステークホルダーへの報告メールの下書きを作成してください。
+
+            以下の形式で作成:
+
+            件名: [プロジェクト名] 週次進捗報告
+
+            本文:
+            お疲れ様です。[プロジェクト名]の週次進捗をご報告いたします。
+
+            ■ 要点（3行以内で全体像）
+
+            ■ 進捗状況
+            主要タスクの状況を簡潔に
+
+            ■ 課題・ご相談事項
+            課題があれば対応案も添えて記載
+
+            ■ 来週の予定
+            主要な予定を列挙
+
+            以上、ご確認のほどよろしくお願いいたします。
+
+            ビジネスメールとして適切な敬語と構成で、簡潔かつ要点明確な文面にしてください。
+        - id: b1c20003-a5f6-4890-abcd-ef1234500002
+          role: user
+          text: '{{#1700000400002.text#}}'
+        selected: false
+        title: メール下書き
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+          enabled: false
+      height: 98
+      id: '1700000400004'
+      position:
+        x: 720
+        y: 230
+      positionAbsolute:
+        x: 720
+        y: 230
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: '分析結果をTeams/Slackのチャンネル投稿用の短文に変換'
+        model:
+          completion_params:
+            temperature: 0.5
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: b1c20004-a5f6-4890-abcd-ef1234500001
+          role: system
+          text: |-
+            あなたはTeams/Slackメッセージの作成者です。
+            分析結果を基に、プロジェクトチャンネルに投稿する進捗共有メッセージを作成してください。
+
+            要件:
+            - 全体を10行以内に収める
+            - 1行目で全体状況を伝える（進捗率とステータス）
+            - 完了事項を簡潔に列挙
+            - 課題があれば1-2行で共有
+            - 来週の予定を1-2行で記載
+
+            チャットメッセージらしく短く読みやすい文面にしてください。
+            堅すぎず、チーム内コミュニケーションに適したトーンで。
+        - id: b1c20004-a5f6-4890-abcd-ef1234500002
+          role: user
+          text: '{{#1700000400002.text#}}'
+        selected: false
+        title: チャット投稿文
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+          enabled: false
+      height: 98
+      id: '1700000400005'
+      position:
+        x: 720
+        y: 410
+      positionAbsolute:
+        x: 720
+        y: 410
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: '分析結果をWBS・タスク管理ツール転記用のアクションアイテムに変換'
+        model:
+          completion_params:
+            temperature: 0.3
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: b1c20005-a5f6-4890-abcd-ef1234500001
+          role: system
+          text: |-
+            あなたはプロジェクト管理の専門家です。
+            分析結果から、WBSやタスク管理ツールに転記できるアクションアイテム一覧を作成してください。
+
+            以下の形式で各アイテムを記載:
+
+            [優先度: 高/中/低] タスク名
+            - 担当: 推定される担当者
+            - 期限: 推定される期限
+            - 前提条件: 着手に必要な条件
+            - 完了条件: 何をもって完了とするか
+            - 備考: 補足情報
+
+            以下のタスクをすべて含めてください:
+            - 遅延タスクのリカバリーアクション
+            - リスク対策のアクション
+            - 来週予定のタスク
+            - 未着手だが着手すべきタスク
+
+            担当や期限は推定で構いません。
+            タスク管理ツールにそのまま転記できる粒度にしてください。
+        - id: b1c20005-a5f6-4890-abcd-ef1234500002
+          role: user
+          text: '{{#1700000400002.text#}}'
+        selected: false
+        title: アクションアイテム
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+          enabled: false
+      height: 98
+      id: '1700000400006'
+      position:
+        x: 720
+        y: 590
+      positionAbsolute:
+        x: 720
+        y: 590
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: '4種類の成果物を見やすく統合して一つの出力にまとめる'
+        model:
+          completion_params:
+            temperature: 0.3
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - id: b1c20006-a5f6-4890-abcd-ef1234500001
+          role: system
+          text: |-
+            あなたはドキュメント編集者です。
+            4種類の成果物を、見やすく区切って統合表示してください。
+
+            以下の構成で出力:
+
+            ============================================================
+            成果物1: 週次レポート（マークダウン形式）
+            ============================================================
+            [レポート内容をそのまま記載]
+
+            ============================================================
+            成果物2: メール下書き（上司報告用）
+            ============================================================
+            [メール内容をそのまま記載]
+
+            ============================================================
+            成果物3: チャット投稿文（Teams/Slack用）
+            ============================================================
+            [投稿文をそのまま記載]
+
+            ============================================================
+            成果物4: アクションアイテム一覧（WBS/タスク管理用）
+            ============================================================
+            [一覧をそのまま記載]
+
+            各成果物は元の内容をそのまま維持してください。
+            体裁を整える程度の軽微な修正は可ですが、内容の追加や削除はしないでください。
+        - id: b1c20006-a5f6-4890-abcd-ef1234500002
+          role: user
+          text: |-
+            成果物1 週次レポート:
+            {{#1700000400003.text#}}
+
+            成果物2 メール下書き:
+            {{#1700000400004.text#}}
+
+            成果物3 チャット投稿文:
+            {{#1700000400005.text#}}
+
+            成果物4 アクションアイテム:
+            {{#1700000400006.text#}}
+        selected: false
+        title: 統合出力
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+          enabled: false
+      height: 98
+      id: '1700000400007'
+      position:
+        x: 1056
+        y: 350
+      positionAbsolute:
+        x: 1056
+        y: 350
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - '1700000400007'
+          - text
+          variable: output
+        selected: false
+        title: 終了
+        type: end
+      height: 90
+      id: '1700000400008'
+      position:
+        x: 1360
+        y: 350
+      positionAbsolute:
+        x: 1360
+        y: 350
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: 0
+      y: 0
+      zoom: 1

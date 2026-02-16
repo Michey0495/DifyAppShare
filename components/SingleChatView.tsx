@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSessionStore } from '@/stores/session-store'
 import { useAppStore } from '@/stores/app-store'
 import { DifyAPI } from '@/lib/dify-api'
-import { ChatMessage, DifyFileReference } from '@/types'
+import { ChatMessage, DifyFileReference, DownloadableFile } from '@/types'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
 import { AppManager } from './AppManager'
@@ -16,6 +16,55 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react'
+
+// Difyファイルオブジェクトかどうかを判定
+function isDifyFileObject(obj: unknown): obj is { url: string; filename: string; mime_type: string; extension: string } {
+  if (!obj || typeof obj !== 'object') return false
+  const o = obj as Record<string, unknown>
+  return typeof o.url === 'string' && typeof o.filename === 'string'
+}
+
+// ワークフロー出力のoutputsからダウンロード可能ファイルを抽出する
+// Difyツールノードが生成したバイナリファイル（PDF/PPTX等）を検出
+// difyBaseUrlはファイルURLの相対パスをフルURLに変換するために必要
+function extractFilesFromOutputs(
+  outputs: Record<string, unknown>,
+  difyBaseUrl: string
+): DownloadableFile[] {
+  const files: DownloadableFile[] = []
+
+  // DifyベースURLからファイルダウンロード用のホストURLを構築
+  // apiEndpointは "http://host/v1" 形式なので、/v1を除いたホスト部分を使う
+  const baseHost = difyBaseUrl.replace(/\/v1\/?$/, '').replace(/\/$/, '')
+
+  function addFileObject(item: { url: string; filename: string; mime_type: string; extension: string }) {
+    // 相対パス（/files/tools/...）の場合はフルURLに変換
+    let fileUrl = item.url
+    if (fileUrl.startsWith('/')) {
+      fileUrl = `${baseHost}${fileUrl}`
+    }
+    files.push({
+      name: item.filename || `file${item.extension || ''}`,
+      mimeType: item.mime_type || 'application/octet-stream',
+      extension: item.extension || '',
+      url: fileUrl,
+    })
+  }
+
+  // outputsの各キーを走査し、Difyファイルオブジェクトを検出
+  for (const [, value] of Object.entries(outputs)) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (isDifyFileObject(item)) addFileObject(item)
+      }
+    } else if (isDifyFileObject(value)) {
+      addFileObject(value)
+    }
+  }
+
+  // data.filesにもファイルがある場合がある（Dify v1.12+）
+  return files
+}
 
 export function SingleChatView() {
   const apps = useAppStore((state) => state.apps)
@@ -165,6 +214,25 @@ export function SingleChatView() {
               if (!fullContent && Object.keys(outputs).length > 0) {
                 fullContent = JSON.stringify(outputs, null, 2)
               }
+
+              // outputsとdata.filesからDifyファイルオブジェクト（PDF/PPTX等）を抽出
+              const difyBaseUrl = selectedApp?.apiEndpoint || ''
+              const extractedFiles = extractFilesFromOutputs(outputs, difyBaseUrl)
+
+              // data.filesにもファイルがある場合がある
+              if (Array.isArray(chunk.data.files)) {
+                const filesFromData = extractFilesFromOutputs(
+                  { _files: chunk.data.files },
+                  difyBaseUrl
+                )
+                // 重複排除（related_idベースのURLで判定）
+                for (const f of filesFromData) {
+                  if (!extractedFiles.some(ef => ef.url === f.url)) {
+                    extractedFiles.push(f)
+                  }
+                }
+              }
+
               const cs =
                 useSessionStore.getState().getSession(chatSessionId)
               if (cs) {
@@ -172,6 +240,7 @@ export function SingleChatView() {
                 msgs[messageIndex] = {
                   ...assistantMessage,
                   content: fullContent || 'ワークフローが完了しました',
+                  files: extractedFiles.length > 0 ? extractedFiles : undefined,
                 }
                 useSessionStore.getState().updateSession(chatSessionId, {
                   messages: msgs,

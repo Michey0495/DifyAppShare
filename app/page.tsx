@@ -6,10 +6,11 @@ import { useSessionStore } from '@/stores/session-store'
 import { ChatSpace } from '@/components/ChatSpace'
 import { AppManager } from '@/components/AppManager'
 import { SingleChatView } from '@/components/SingleChatView'
+import { TemplateGallery } from '@/components/TemplateGallery'
 import { Logo } from '@/components/Logo'
-import { MessageSquare, LayoutGrid } from 'lucide-react'
+import { MessageSquare, LayoutGrid, FolderDown } from 'lucide-react'
 
-type ViewMode = 'chat' | 'grid'
+type ViewMode = 'chat' | 'grid' | 'templates'
 
 export default function Home() {
   const loadApps = useAppStore((state) => state.loadApps)
@@ -61,6 +62,17 @@ export default function Home() {
               <LayoutGrid className="w-3.5 h-3.5" />
               Grid
             </button>
+            <button
+              onClick={() => handleViewChange('templates')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150 ${
+                viewMode === 'templates'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <FolderDown className="w-3.5 h-3.5" />
+              Templates
+            </button>
           </div>
 
           {/* 右端のスペーサー（ロゴとの対称性のため） */}
@@ -70,6 +82,8 @@ export default function Home() {
 
       {viewMode === 'chat' ? (
         <SingleChatView />
+      ) : viewMode === 'templates' ? (
+        <TemplateGallery />
       ) : (
         <main className="max-w-screen-xl mx-auto px-5 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

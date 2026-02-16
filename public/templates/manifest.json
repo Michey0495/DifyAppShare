@@ -1,0 +1,42 @@
+[
+  {
+    "name": "チャットボット テンプレート",
+    "mode": "chat",
+    "description": "会話形式の基本テンプレート。テキストとファイルを送ると、LLMが対話的に応答する。インポート後にLLMモデルの選択とpre_promptの書き換えが必要。",
+    "filename": "dify_template_saas_chat.yml",
+    "size": 2100,
+    "setup": "アプリタイプ「チャットボット」で登録"
+  },
+  {
+    "name": "ワークフロー テンプレート（基本）",
+    "mode": "workflow",
+    "description": "Start → LLM → End の最小構成。question（テキスト必須）とfile（ファイル任意）を受け取り、LLMが処理して結果を返す。カスタマイズのベースに最適。",
+    "filename": "dify_template_saas_workflow.yml",
+    "size": 4695,
+    "setup": "アプリタイプ「ワークフロー」で登録"
+  },
+  {
+    "name": "ワークフロー テンプレート（多機能）",
+    "mode": "workflow",
+    "description": "基本版と同じStart → LLM → Endの構成だが、プロンプトが多機能対応。分析・要約・翻訳・質問応答をユーザーの入力内容から自動判断する。",
+    "filename": "dify_template_saas_workflow_advanced.yml",
+    "size": 4985,
+    "setup": "アプリタイプ「ワークフロー」で登録"
+  },
+  {
+    "name": "週次報告書ジェネレーター",
+    "mode": "workflow",
+    "description": "7ノード構成。プロジェクトの進捗メモを入力すると、情報抽出 → 定量分析 → リスク評価 → 改善提案 → 報告書生成の5段階LLMチェーンで週次報告書を自動生成する。実行に30秒〜1分程度。",
+    "filename": "dify_template_workflow_report_generator.yml",
+    "size": 14871,
+    "setup": "アプリタイプ「ワークフロー」で登録。5つのLLMノードすべてでモデル選択が必要"
+  },
+  {
+    "name": "マルチ成果物ジェネレーター",
+    "mode": "workflow",
+    "description": "8ノード・10エッジのファンアウト型。1つの入力から週次レポート・メール下書き・チャット投稿文・アクションアイテムの4種類を同時並列生成する。実行に40秒〜1分半程度。",
+    "filename": "dify_template_workflow_multi_output.yml",
+    "size": 18565,
+    "setup": "アプリタイプ「ワークフロー」で登録。6つのLLMノードすべてでモデル選択が必要"
+  }
+]

@@ -50,12 +50,24 @@ export interface AttachedFile {
   uploadedId?: string // アップロード完了後にセットされる
 }
 
+// ワークフロー出力から抽出されたダウンロード可能ファイル
+export interface DownloadableFile {
+  name: string
+  mimeType: string
+  extension: string
+  // テキスト成果物の場合はcontentにテキスト本文を保持
+  content?: string
+  // Difyツールが生成したバイナリファイルの場合はurlに署名付きURLを保持
+  url?: string
+}
+
 export interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
   timestamp: string
   fileName?: string // 添付ファイル名（表示用）
+  files?: DownloadableFile[] // ワークフロー出力のダウンロード可能ファイル
 }
 
 export interface DifyChatRequest {
