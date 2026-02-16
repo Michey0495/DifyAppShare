@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Download, FileCode, MessageSquare, Workflow, ChevronDown, ChevronUp } from 'lucide-react'
+import { Download, MessageSquare, Workflow, X } from 'lucide-react'
 
 interface TemplateEntry {
   name: string
@@ -12,28 +12,19 @@ interface TemplateEntry {
   setup: string
 }
 
-function modeLabel(mode: string) {
-  switch (mode) {
-    case 'workflow': return 'Workflow'
-    case 'chat': return 'Chat'
-    default: return mode
-  }
+interface TemplateManifest {
+  templates: TemplateEntry[]
+  examples: TemplateEntry[]
 }
 
 function ModeIcon({ mode }: { mode: string }) {
-  switch (mode) {
-    case 'workflow': return <Workflow className="w-4 h-4" />
-    case 'chat': return <MessageSquare className="w-4 h-4" />
-    default: return <FileCode className="w-4 h-4" />
-  }
+  if (mode === 'workflow') return <Workflow className="w-3.5 h-3.5" />
+  return <MessageSquare className="w-3.5 h-3.5" />
 }
 
-function modeColor(mode: string) {
-  switch (mode) {
-    case 'workflow': return 'bg-blue-50 text-blue-700 border-blue-200'
-    case 'chat': return 'bg-green-50 text-green-700 border-green-200'
-    default: return 'bg-slate-50 text-slate-700 border-slate-200'
-  }
+function modeBadgeClass(mode: string) {
+  if (mode === 'workflow') return 'bg-blue-50 text-blue-600 border-blue-200'
+  return 'bg-green-50 text-green-600 border-green-200'
 }
 
 function formatSize(bytes: number) {
@@ -41,130 +32,142 @@ function formatSize(bytes: number) {
   return `${(bytes / 1024).toFixed(1)} KB`
 }
 
-export function TemplateGallery() {
-  const [templates, setTemplates] = useState<TemplateEntry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [guideOpen, setGuideOpen] = useState(false)
+interface Props {
+  open: boolean
+  onClose: () => void
+}
+
+export function TemplateGallery({ open, onClose }: Props) {
+  const [manifest, setManifest] = useState<TemplateManifest | null>(null)
 
   useEffect(() => {
+    if (!open) return
     fetch('/templates/manifest.json')
       .then(res => res.json())
-      .then((data: TemplateEntry[]) => {
-        setTemplates(data)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [])
+      .then((data: TemplateManifest) => setManifest(data))
+      .catch(() => {})
+  }, [open])
 
-  const handleDownload = (template: TemplateEntry) => {
+  if (!open) return null
+
+  const handleDownload = (entry: TemplateEntry) => {
     const a = document.createElement('a')
-    a.href = `/templates/${encodeURIComponent(template.filename)}`
-    a.download = template.filename
+    a.href = `/templates/${encodeURIComponent(entry.filename)}`
+    a.download = entry.filename
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-slate-400 text-sm">
-        テンプレートを読み込み中...
+  const renderCard = (entry: TemplateEntry) => (
+    <div
+      key={entry.filename}
+      className="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors bg-white"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-sm font-medium text-slate-900">
+              {entry.name}
+            </span>
+            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${modeBadgeClass(entry.mode)}`}>
+              <ModeIcon mode={entry.mode} />
+              {entry.mode === 'workflow' ? 'Workflow' : 'Chat'}
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 leading-relaxed mb-2">
+            {entry.description}
+          </p>
+          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+            <span>{formatSize(entry.size)}</span>
+            <span className="text-slate-200">|</span>
+            <span>{entry.setup}</span>
+          </div>
+        </div>
+        <button
+          onClick={() => handleDownload(entry)}
+          className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 transition-colors shrink-0"
+        >
+          <Download className="w-3 h-3" />
+          DSL
+        </button>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
-      <div className="mb-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-1">
-          Dify DSL テンプレート
-        </h2>
-        <p className="text-sm text-slate-500">
-          .yml ファイルをダウンロードし、Difyにインポートするとすぐ使えます
-        </p>
-      </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* オーバーレイ */}
+      <div
+        className="absolute inset-0 bg-black/30"
+        onClick={onClose}
+      />
 
-      {/* インポート手順 */}
-      <div className="mb-8 border border-slate-200 rounded-xl overflow-hidden">
-        <button
-          onClick={() => setGuideOpen(!guideOpen)}
-          className="w-full flex items-center justify-between px-5 py-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
-        >
-          <span className="text-sm font-medium text-slate-800">
-            導入手順
-          </span>
-          {guideOpen
-            ? <ChevronUp className="w-4 h-4 text-slate-400" />
-            : <ChevronDown className="w-4 h-4 text-slate-400" />
-          }
-        </button>
-        {guideOpen && (
-          <div className="px-5 py-4 text-sm text-slate-700 space-y-4 border-t border-slate-200 bg-white">
-            <div>
-              <p className="font-medium text-slate-800 mb-2">Difyへのインポート</p>
-              <ol className="list-decimal list-inside space-y-1.5 text-slate-600 text-[13px]">
-                <li>下のテンプレートから .yml ファイルをダウンロード</li>
-                <li>Dify にログインし「スタジオ」を開く</li>
-                <li>「DSLファイルをインポート」からダウンロードした .yml を選択</li>
-                <li>アプリが作成されるので、各LLMノードでモデルを選択して「公開」</li>
-              </ol>
-            </div>
-            <div>
-              <p className="font-medium text-slate-800 mb-2">DifyAppShareへの接続</p>
-              <ol className="list-decimal list-inside space-y-1.5 text-slate-600 text-[13px]">
-                <li>Dify でアプリを公開後、「バックエンドサービスAPI」からAPIキーを発行</li>
-                <li>DifyAppShare の Chat 画面でアプリを登録</li>
-                <li>APIエンドポイントはベースURL（例: http://your-dify.com/v1）を入力</li>
-                <li>APIキーは app- で始まるキーを貼り付け</li>
-              </ol>
-            </div>
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
-              ワークフロー型テンプレートの開始ノードには変数 question（必須）が定義済みです。
-              DifyAppShareはユーザーの入力テキストをこの変数に自動送信します。
-              変数名を変えるとエラーになるので注意してください。
-            </div>
+      {/* モーダル本体 */}
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col">
+        {/* ヘッダー */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-900">
+              Dify DSL テンプレート
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              .yml をダウンロードしてDifyにインポート
+            </p>
           </div>
-        )}
-      </div>
-
-      {/* テンプレート一覧 */}
-      <div className="space-y-3">
-        {templates.map((template, idx) => (
-          <div
-            key={idx}
-            className="border border-slate-200 rounded-xl p-5 hover:border-slate-300 transition-colors bg-white"
+          <button
+            onClick={onClose}
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2.5 mb-2">
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    {template.name}
-                  </h3>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium border ${modeColor(template.mode)}`}>
-                    <ModeIcon mode={template.mode} />
-                    {modeLabel(template.mode)}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed mb-2">
-                  {template.description}
-                </p>
-                <div className="flex items-center gap-3 text-[11px] text-slate-400">
-                  <span>{template.filename}</span>
-                  <span>{formatSize(template.size)}</span>
-                  <span className="text-slate-300">|</span>
-                  <span>{template.setup}</span>
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* コンテンツ */}
+        <div className="overflow-y-auto px-5 py-4 space-y-5">
+          {manifest ? (
+            <>
+              {/* テンプレート */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  テンプレート
+                </h3>
+                <div className="space-y-2.5">
+                  {manifest.templates.map(renderCard)}
                 </div>
               </div>
-              <button
-                onClick={() => handleDownload(template)}
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 transition-colors shrink-0"
-              >
-                <Download className="w-3.5 h-3.5" />
-                DSL
-              </button>
+
+              {/* 完成イメージ */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  完成イメージ
+                </h3>
+                <div className="space-y-2.5">
+                  {manifest.examples.map(renderCard)}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center py-12 text-sm text-slate-400">
+              読み込み中...
             </div>
+          )}
+
+          {/* 導入手順 */}
+          <div className="border-t border-slate-100 pt-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              導入手順
+            </p>
+            <ol className="list-decimal list-inside space-y-1 text-xs text-slate-500 leading-relaxed">
+              <li>.yml をダウンロード</li>
+              <li>Difyにログインし「スタジオ」を開く</li>
+              <li>「DSLファイルをインポート」から .yml を選択</li>
+              <li>LLMノードでモデルを選択して「公開」</li>
+              <li>「バックエンドサービスAPI」からAPIキーを発行</li>
+              <li>このアプリでAPIエンドポイントとキーを登録</li>
+            </ol>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   )

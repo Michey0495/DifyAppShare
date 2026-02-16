@@ -8,6 +8,7 @@ import { ChatMessage, DifyFileReference, DownloadableFile } from '@/types'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
 import { AppManager } from './AppManager'
+import { TemplateGallery } from './TemplateGallery'
 import {
   RotateCcw,
   Loader2,
@@ -15,6 +16,7 @@ import {
   MessageSquare,
   PanelLeftClose,
   PanelLeftOpen,
+  FolderDown,
 } from 'lucide-react'
 
 // Difyファイルオブジェクトかどうかを判定
@@ -80,6 +82,7 @@ export function SingleChatView() {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [templateOpen, setTemplateOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -358,6 +361,17 @@ export function SingleChatView() {
             })
           )}
         </div>
+
+        {/* テンプレートボタン */}
+        <div className="px-4 py-3 border-t border-slate-200/60 shrink-0">
+          <button
+            onClick={() => setTemplateOpen(true)}
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <FolderDown className="w-3.5 h-3.5" />
+            テンプレート
+          </button>
+        </div>
       </aside>
 
       {/* サイドバートグル */}
@@ -480,6 +494,8 @@ export function SingleChatView() {
           </div>
         )}
       </div>
+
+      <TemplateGallery open={templateOpen} onClose={() => setTemplateOpen(false)} />
     </div>
   )
 }
