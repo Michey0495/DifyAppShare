@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Download, MessageSquare, Workflow, X } from 'lucide-react'
 
 interface TemplateEntry {
@@ -12,10 +11,43 @@ interface TemplateEntry {
   setup: string
 }
 
-interface TemplateManifest {
-  templates: TemplateEntry[]
-  examples: TemplateEntry[]
-}
+const TEMPLATES: TemplateEntry[] = [
+  {
+    name: 'チャットボット テンプレート',
+    mode: 'chat',
+    description: '会話形式の基本テンプレート。テキストとファイルを送ると、LLMが対話的に応答する。',
+    filename: 'dify_template_saas_chat.yml',
+    size: 2100,
+    setup: 'アプリタイプ「チャットボット」で登録',
+  },
+  {
+    name: 'ワークフロー テンプレート',
+    mode: 'workflow',
+    description: 'Start → LLM → End の最小構成。カスタマイズのベースに最適。',
+    filename: 'dify_template_saas_workflow.yml',
+    size: 4695,
+    setup: 'アプリタイプ「ワークフロー」で登録',
+  },
+]
+
+const EXAMPLES: TemplateEntry[] = [
+  {
+    name: '週次報告書ジェネレーター',
+    mode: 'workflow',
+    description: '7ノード・5段階LLMチェーン。進捗メモから情報抽出→定量分析→リスク評価→改善提案→報告書生成を自動実行。',
+    filename: 'dify_template_workflow_report_generator.yml',
+    size: 14871,
+    setup: '5つのLLMノードすべてでモデル選択が必要',
+  },
+  {
+    name: 'マルチ成果物ジェネレーター',
+    mode: 'workflow',
+    description: '8ノード・ファンアウト型。1つの入力から週次レポート・メール・チャット投稿文・アクションアイテムの4種を同時生成。',
+    filename: 'dify_template_workflow_multi_output.yml',
+    size: 18565,
+    setup: '6つのLLMノードすべてでモデル選択が必要',
+  },
+]
 
 function ModeIcon({ mode }: { mode: string }) {
   if (mode === 'workflow') return <Workflow className="w-3.5 h-3.5" />
@@ -38,16 +70,6 @@ interface Props {
 }
 
 export function TemplateGallery({ open, onClose }: Props) {
-  const [manifest, setManifest] = useState<TemplateManifest | null>(null)
-
-  useEffect(() => {
-    if (!open) return
-    fetch('/templates/manifest.json')
-      .then(res => res.json())
-      .then((data: TemplateManifest) => setManifest(data))
-      .catch(() => {})
-  }, [open])
-
   if (!open) return null
 
   const handleDownload = (entry: TemplateEntry) => {
@@ -97,15 +119,12 @@ export function TemplateGallery({ open, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* オーバーレイ */}
       <div
         className="absolute inset-0 bg-black/30"
         onClick={onClose}
       />
 
-      {/* モーダル本体 */}
       <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col">
-        {/* ヘッダー */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
           <div>
             <h2 className="text-sm font-semibold text-slate-900">
@@ -123,37 +142,25 @@ export function TemplateGallery({ open, onClose }: Props) {
           </button>
         </div>
 
-        {/* コンテンツ */}
         <div className="overflow-y-auto px-5 py-4 space-y-5">
-          {manifest ? (
-            <>
-              {/* テンプレート */}
-              <div>
-                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                  テンプレート
-                </h3>
-                <div className="space-y-2.5">
-                  {manifest.templates.map(renderCard)}
-                </div>
-              </div>
-
-              {/* 完成イメージ */}
-              <div>
-                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                  完成イメージ
-                </h3>
-                <div className="space-y-2.5">
-                  {manifest.examples.map(renderCard)}
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center justify-center py-12 text-sm text-slate-400">
-              読み込み中...
+          <div>
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+              テンプレート
+            </h3>
+            <div className="space-y-2.5">
+              {TEMPLATES.map(renderCard)}
             </div>
-          )}
+          </div>
 
-          {/* 導入手順 */}
+          <div>
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+              完成イメージ
+            </h3>
+            <div className="space-y-2.5">
+              {EXAMPLES.map(renderCard)}
+            </div>
+          </div>
+
           <div className="border-t border-slate-100 pt-4">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
               導入手順
